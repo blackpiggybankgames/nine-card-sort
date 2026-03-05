@@ -1,0 +1,26 @@
+extends Node
+
+var balance: Dictionary
+var config_path = "res://config/game_balance.json"
+
+func _ready():
+    load_config()
+    if OS.is_debug_build():
+        print("Config loaded. Press 'R' to reload during development.")
+
+func load_config():
+    var file = FileAccess.open(config_path, FileAccess.READ)
+    if file:
+        balance = JSON.parse_string(file.get_as_text())
+        file.close()
+        print("Configuration loaded successfully")
+    else:
+        push_error("Failed to load configuration file: " + config_path)
+
+func _input(event):
+    # 開発中のみ: Rキーで設定をリロード
+    if OS.is_debug_build() and event is InputEventKey:
+        if event.pressed and event.keycode == KEY_R:
+            load_config()
+            get_tree().call_group("reloadable", "on_config_reloaded")
+            print("Configuration reloaded!")

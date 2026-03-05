@@ -1,0 +1,25 @@
+# Godot 4+ specific
+.godot/
+.import/
+export_presets.cfg
+
+# Export builds
+build/
+*.x86_64
+*.exe
+*.pck
+
+# Claude Code temporary files
+.tmp-godot-*/
+
+# OS
+.DS_Store
+Thumbs.db
+*~
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log

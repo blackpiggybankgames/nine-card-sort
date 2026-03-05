@@ -1,0 +1,21 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "last_updated": "2026-03-04"
+  },
+  "bird": {
+    "jump_velocity": -350,
+    "gravity": 980,
+    "size": [40, 40]
+  },
+  "pipes": {
+    "speed": 150,
+    "spacing": 200,
+    "gap_height": 180,
+    "gap_y_range": [50, 450]
+  },
+  "game": {
+    "screen_width": 800,
+    "screen_height": 600
+  }
+}
