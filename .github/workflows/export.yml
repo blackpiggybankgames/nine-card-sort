@@ -4,13 +4,17 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: write
+
 jobs:
   export:
     runs-on: ubuntu-latest
+    name: Export Game
     steps:
       - uses: actions/checkout@v4
       - name: Export Godot project
-        uses: firebelley/godot-export@v6
+        uses: firebelley/godot-export@v7.0.0
         with:
           godot_executable_download_url: https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
           godot_export_templates_download_url: https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz
