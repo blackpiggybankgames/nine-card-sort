@@ -29,6 +29,13 @@ extends Node2D
 
 
 func _ready() -> void:
+	# 日本語フォントのテーマを適用
+	var theme = load("res://assets/default_theme.tres")
+	if theme:
+		for child in ui_layer.get_children():
+			if child is Control:
+				child.theme = theme
+
 	# シグナル接続
 	game_manager.turn_started.connect(_on_turn_started)
 	game_manager.turn_ended.connect(_on_turn_ended)

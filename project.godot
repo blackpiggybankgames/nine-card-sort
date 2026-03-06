@@ -24,6 +24,3 @@ Config="*res://scripts/autoload/Config.gd"
 window/size/viewport_width=800
 window/size/viewport_height=600
 
-[gui]
-
-theme/custom="res://assets/default_theme.tres"
