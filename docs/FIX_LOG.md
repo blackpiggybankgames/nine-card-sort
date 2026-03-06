@@ -1,6 +1,6 @@
 # Fix Log / 修正履歴
 
-**最終更新**: 2026-03-06
+**最終更新**: 2026-03-07
 
 ---
 
@@ -41,6 +41,9 @@
 | FIX-015 | UI | カード移動時にアニメーションがない | Tweenでアニメーション実装 | 2026-03-06 |
 | FIX-016 | REQ | デバッグ用クリアボタンがない | debug_modeフラグと即クリアボタン追加 | 2026-03-06 |
 | FIX-017 | BUG | クリア後の再開ができない | DeckDisplayにreset()追加、ゲーム開始時に呼び出し | 2026-03-06 |
+| FIX-018 | DEPLOY | GitHub ActionsでWebエクスポートが失敗 | icon.svg追加、export_path設定、use_preset_export_path有効化 | 2026-03-07 |
+| FIX-019 | UI | 日本語テキストが文字化け | Noto Sans JPフォント追加、テーマをコードで適用 | 2026-03-07 |
+| FIX-020 | UI | スマホ画面で表示が崩れる | ストレッチモード設定、動的な画面サイズ対応 | 2026-03-07 |
 
 ---
 
@@ -328,5 +331,95 @@
   - `_input()`の先頭で`if not is_visible_in_tree(): return`を追加
 - `scenes/Main.tscn`
   - `ClearBG`と`ClearScreen`に`mouse_filter = 2`を追加
+
+---
+
+### FIX-018: GitHub ActionsでWebエクスポートが失敗
+
+**報告**: GitHub Actions実行エラー
+**優先度**: !!! 致命的
+**原因**:
+1. `icon.svg`ファイルが存在しなかった
+2. `export_presets.cfg`の`export_path`が空だった
+3. `use_preset_export_path`が無効で、エクスポート先とデプロイ元が不一致
+
+**修正**:
+- `icon.svg`を追加（シンプルなゲームアイコン）
+- `export_path="build/Web/index.html"`を設定
+- GitHub Actionsワークフローで`use_preset_export_path: true`を有効化
+- GitHub Pagesを`gh-pages`ブランチで有効化
+
+**変更ファイル**:
+- `icon.svg`（新規作成）
+- `export_presets.cfg`
+- `.github/workflows/export.yml`
+
+---
+
+### FIX-019: 日本語テキストが文字化け
+
+**報告**: スマートフォンでの動作確認時
+**優先度**: !!! 致命的
+**原因**: 日本語フォントがプロジェクトに含まれていなかった。Godotのデフォルトフォントは日本語非対応。
+
+**修正**:
+- Noto Sans JP（Google Fonts）をダウンロードして追加
+- `default_theme.tres`でフォントを設定
+- CI環境でのタイミング問題を回避するため、`Main.gd`でテーマをコードから適用
+
+**変更ファイル**:
+- `assets/fonts/NotoSansJP-Regular.otf`（新規追加）
+- `assets/fonts/NotoSansJP-Regular.otf.import`
+- `assets/default_theme.tres`（新規作成）
+- `scripts/Main.gd`
+
+---
+
+### FIX-020: スマホ画面で表示が崩れる
+
+**報告**: スマートフォンでの動作確認時
+**優先度**: !! 重要
+**原因**:
+1. 固定サイズ（800x600）でレイアウトしていた
+2. ストレッチモードが未設定でアスペクト比が崩れた
+3. カードとUIの位置が固定値だった
+
+**修正**:
+- `project.godot`にストレッチ設定を追加
+  - `stretch/mode="canvas_items"`
+  - `stretch/aspect="expand"`
+- `DeckDisplay`が画面サイズに応じて中央に配置されるよう修正
+- `Background`が画面全体を覆うよう動的にサイズ調整
+
+**変更ファイル**:
+- `project.godot`
+- `scripts/DeckDisplay.gd`
+- `scripts/Main.gd`
+- `scenes/Main.tscn`
+
+---
+
+## 📱 次のステップ: スマートフォン実機検証
+
+以下の項目を実機で検証する:
+
+1. **タッチ操作**
+   - カードのタップが正しく認識されるか
+   - ボタンのタップが正しく動作するか
+   - 誤タップ防止（カード間隔は十分か）
+
+2. **表示確認**
+   - 各画面サイズでの表示崩れがないか
+   - テキストが読みやすいサイズか
+   - カードの数字が見やすいか
+
+3. **パフォーマンス**
+   - アニメーションがスムーズか
+   - 読み込み時間は許容範囲か
+
+4. **ゲームプレイ**
+   - 全能力が正しく動作するか
+   - クリア判定が正しいか
+   - ゲームの流れに違和感がないか
 
 ---
