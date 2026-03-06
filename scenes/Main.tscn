@@ -1,0 +1,350 @@
+[gd_scene load_steps=6 format=3 uid="uid://b8iurcg2xupqi"]
+
+[ext_resource type="Script" path="res://scripts/Main.gd" id="1_main"]
+[ext_resource type="Script" path="res://scripts/GameManager.gd" id="2_gm"]
+[ext_resource type="Script" path="res://scripts/DeckDisplay.gd" id="3_deck"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button"]
+bg_color = Color(0.2, 0.4, 0.8, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0, 0, 0, 0.7)
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_main")
+
+[node name="Background" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 800.0
+offset_bottom = 600.0
+color = Color(0.15, 0.2, 0.15, 1)
+
+[node name="GameManager" type="Node" parent="."]
+script = ExtResource("2_gm")
+
+[node name="DeckDisplay" type="Node2D" parent="."]
+position = Vector2(400, 350)
+script = ExtResource("3_deck")
+
+[node name="UILayer" type="CanvasLayer" parent="."]
+
+[node name="TitleScreen" type="Control" parent="UILayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TitleBG" type="ColorRect" parent="UILayer/TitleScreen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.15, 0.2, 1)
+
+[node name="TitleLabel" type="Label" parent="UILayer/TitleScreen"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 120.0
+offset_right = 200.0
+offset_bottom = 200.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 48
+text = "Nine Card Sort"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="UILayer/TitleScreen"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 200.0
+offset_right = 200.0
+offset_bottom = 240.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 20
+text = "ナインカードソート"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StartButton" type="Button" parent="UILayer/TitleScreen"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -80.0
+offset_top = 350.0
+offset_right = 80.0
+offset_bottom = 400.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+text = "スタート"
+
+[node name="GameUI" type="Control" parent="UILayer"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TopPanel" type="Panel" parent="UILayer/GameUI"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 80.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="TurnCounter" type="Label" parent="UILayer/GameUI"]
+layout_mode = 1
+offset_left = 20.0
+offset_top = 10.0
+offset_right = 150.0
+offset_bottom = 40.0
+theme_override_font_sizes/font_size = 20
+text = "手数: 0"
+
+[node name="AbilityName" type="Label" parent="UILayer/GameUI"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 10.0
+offset_right = 200.0
+offset_bottom = 40.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 24
+text = "[1] 引き上げ"
+horizontal_alignment = 1
+
+[node name="AbilityDescription" type="Label" parent="UILayer/GameUI"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -300.0
+offset_top = 45.0
+offset_right = 300.0
+offset_bottom = 75.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 16
+text = "任意の1枚を一番上へ移動する"
+horizontal_alignment = 1
+
+[node name="ButtonContainer" type="HBoxContainer" parent="UILayer/GameUI"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -170.0
+offset_top = -70.0
+offset_right = 170.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+alignment = 1
+
+[node name="UseAbilityButton" type="Button" parent="UILayer/GameUI"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -180.0
+offset_top = -70.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+text = "能力を使う"
+
+[node name="SkipButton" type="Button" parent="UILayer/GameUI"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -70.0
+offset_right = 180.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 18
+text = "スキップ"
+
+[node name="CancelButton" type="Button" parent="UILayer/GameUI"]
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -80.0
+offset_top = -120.0
+offset_right = 80.0
+offset_bottom = -80.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 16
+text = "キャンセル"
+
+[node name="InstructionLabel" type="Label" parent="UILayer/GameUI"]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 90.0
+offset_right = 200.0
+offset_bottom = 120.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 1, 0.5, 1)
+theme_override_font_sizes/font_size = 18
+text = "カードを選んでください"
+horizontal_alignment = 1
+
+[node name="DebugContainer" type="Control" parent="UILayer/GameUI"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -120.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = 70.0
+grow_horizontal = 0
+
+[node name="DebugLabel" type="Label" parent="UILayer/GameUI/DebugContainer"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 20.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 0.5, 0.5, 1)
+theme_override_font_sizes/font_size = 12
+text = "[DEBUG MODE]"
+horizontal_alignment = 1
+
+[node name="DebugClearButton" type="Button" parent="UILayer/GameUI/DebugContainer"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 25.0
+offset_bottom = 55.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 0.3, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = "即クリア"
+
+[node name="ClearScreen" type="Control" parent="UILayer"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ClearBG" type="ColorRect" parent="UILayer/ClearScreen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.1, 0.2, 0.1, 0.9)
+
+[node name="ClearLabel" type="Label" parent="UILayer/ClearScreen"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 150.0
+offset_right = 200.0
+offset_bottom = 220.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.3, 1)
+theme_override_font_sizes/font_size = 48
+text = "クリア！"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TurnCountLabel" type="Label" parent="UILayer/ClearScreen"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 240.0
+offset_right = 200.0
+offset_bottom = 290.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 28
+text = "20 手でクリア！"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RetryButton" type="Button" parent="UILayer/ClearScreen"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -80.0
+offset_top = 350.0
+offset_right = 80.0
+offset_bottom = 400.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+text = "もう一度"
+
+[node name="TitleButton" type="Button" parent="UILayer/ClearScreen"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -80.0
+offset_top = 420.0
+offset_right = 80.0
+offset_bottom = 460.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 16
+text = "タイトルへ"
+
+[connection signal="pressed" from="UILayer/TitleScreen/StartButton" to="." method="_on_start_button_pressed"]
+[connection signal="pressed" from="UILayer/GameUI/UseAbilityButton" to="." method="_on_use_ability_button_pressed"]
+[connection signal="pressed" from="UILayer/GameUI/SkipButton" to="." method="_on_skip_button_pressed"]
+[connection signal="pressed" from="UILayer/GameUI/CancelButton" to="." method="_on_cancel_button_pressed"]
+[connection signal="pressed" from="UILayer/GameUI/DebugContainer/DebugClearButton" to="." method="_on_debug_clear_button_pressed"]
+[connection signal="pressed" from="UILayer/ClearScreen/RetryButton" to="." method="_on_retry_button_pressed"]
+[connection signal="pressed" from="UILayer/ClearScreen/TitleButton" to="." method="_on_title_button_pressed"]

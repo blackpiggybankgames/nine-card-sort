@@ -1,7 +1,6 @@
 # Godot 4+ specific
 .godot/
 .import/
-export_presets.cfg
 
 # Export builds
 build/
@@ -16,6 +15,7 @@ build/
 .DS_Store
 Thumbs.db
 *~
+*:Zone.Identifier
 
 # IDE
 .vscode/
