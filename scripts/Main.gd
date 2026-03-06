@@ -8,6 +8,7 @@ extends Node2D
 @onready var game_manager: GameManager = $GameManager
 @onready var deck_display: DeckDisplay = $DeckDisplay
 @onready var ui_layer: CanvasLayer = $UILayer
+@onready var background: ColorRect = $Background
 @onready var title_screen: Control = $UILayer/TitleScreen
 @onready var game_ui: Control = $UILayer/GameUI
 @onready var clear_screen: Control = $UILayer/ClearScreen
@@ -36,6 +37,10 @@ func _ready() -> void:
 			if child is Control:
 				child.theme = theme
 
+	# 画面サイズ変更時に背景を更新
+	get_viewport().size_changed.connect(_update_background_size)
+	_update_background_size()
+
 	# シグナル接続
 	game_manager.turn_started.connect(_on_turn_started)
 	game_manager.turn_ended.connect(_on_turn_ended)
@@ -50,6 +55,14 @@ func _ready() -> void:
 
 	# 初期状態はタイトル画面
 	_show_title_screen()
+
+
+# 背景サイズを画面に合わせる
+func _update_background_size() -> void:
+	if background:
+		var viewport_size = get_viewport_rect().size
+		background.size = viewport_size
+		background.position = Vector2.ZERO
 
 
 # デバッグUIの初期設定

@@ -24,7 +24,15 @@ var is_animating: bool = false
 
 
 func _ready() -> void:
-	pass
+	# 画面サイズに応じて位置を調整
+	_update_position()
+	get_viewport().size_changed.connect(_update_position)
+
+
+func _update_position() -> void:
+	# 画面中央に配置（やや上寄り）
+	var viewport_size = get_viewport_rect().size
+	position = Vector2(viewport_size.x / 2, viewport_size.y * 0.45)
 
 
 # 山札をリセット（ゲーム再開時に呼び出す）
