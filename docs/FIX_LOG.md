@@ -1,6 +1,6 @@
 # Fix Log / 修正履歴
 
-**最終更新**: 2026-03-07
+**最終更新**: 2026-03-08
 
 ---
 
@@ -44,6 +44,7 @@
 | FIX-018 | DEPLOY | GitHub ActionsでWebエクスポートが失敗 | icon.svg追加、export_path設定、use_preset_export_path有効化 | 2026-03-07 |
 | FIX-019 | UI | 日本語テキストが文字化け | Noto Sans JPフォント追加、テーマをコードで適用 | 2026-03-07 |
 | FIX-020 | UI | スマホ画面で表示が崩れる | ストレッチモード設定、動的な画面サイズ対応 | 2026-03-07 |
+| FIX-021 | BUG | クリア後のボタン操作・カード表示問題 | Card入力処理修正、クリア画面でカード表示 | 2026-03-08 |
 
 ---
 
@@ -396,6 +397,31 @@
 - `scripts/DeckDisplay.gd`
 - `scripts/Main.gd`
 - `scenes/Main.tscn`
+
+---
+
+### FIX-021: クリア後のボタン操作・カード表示問題
+
+**報告**: DEBUG_FEEDBACK.md より
+**優先度**: !!! 致命的
+**原因**:
+1. デバッグクリアボタンがGameManagerの状態を正しく更新していなかった
+2. クリア画面でカードが非表示になり、クリア状態を確認できなかった
+3. カードが選択不可でも`_input`でイベントを消費し、ボタンクリックをブロックしていた
+
+**修正**:
+- `Card._input()`で`is_selectable = false`の場合は入力処理をスキップし、他のUI要素へ伝播させる
+- クリア画面で`deck_display.visible = true`にしてカードを表示
+- `deck_display.set_all_selectable(false)`でカードのクリックは無効化
+- デバッグクリアボタンで山札をソート済み状態にし、`check_win()`で正しく勝利判定を発動
+
+**変更ファイル**:
+- `scripts/Card.gd`
+  - `_input()`の先頭で`if not is_selectable: return`を追加
+- `scripts/Main.gd`
+  - `_show_clear_screen()`で`deck_display.visible = true`に変更
+  - `_show_clear_screen()`で`set_all_selectable(false)`と`clear_highlights()`を追加
+  - `_on_debug_clear_button_pressed()`で山札を`[1,2,3,4,5,6,7,8,9]`に設定し`check_win()`を呼び出す
 
 ---
 
