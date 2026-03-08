@@ -64,15 +64,16 @@ Main (Node2D)
 var deck: Array[int] = []  # 例: [3, 7, 1, 5, 9, 2, 8, 4, 6]
 
 # カードの能力はDictionaryで定義
+# 注意: 能力は発動カード除外後の8枚に対して適用される
 var card_abilities: Dictionary = {
     1: "任意の1枚を一番上へ移動",
     2: "任意の1枚を一番下へ移動",
-    3: "任意の1枚を真ん中（5番目）へ移動",
-    4: "上から2枚をまとめて一番下へ移動",
-    5: "真ん中（5番目）のカードを一番上へ移動",
-    6: "上から3枚をまとめて一番下へ移動",
-    7: "一番下のカードを真ん中（5番目）へ移動",
-    8: "次のカードの数字をXとして、上からX枚をまとめて一番下へ",
+    3: "一番上のカードを真ん中へ移動",
+    4: "一番下のカードを一番上へ移動",
+    5: "上3枚を1つ回転（[A,B,C]→[C,A,B]）",
+    6: "下4枚の順序を逆転",
+    7: "上4枚と下4枚を入れ替え",
+    8: "8枚全体の順序を逆転",
     9: "足して9になる2枚を一番下へ移動"
 }
 ```
@@ -102,12 +103,12 @@ func use_ability(card_number: int):
     match card_number:
         1: ability_move_to_top()        # 任意の1枚を一番上へ
         2: ability_move_to_bottom()     # 任意の1枚を一番下へ
-        3: ability_move_to_middle()     # 任意の1枚を真ん中へ
-        4: ability_move_top2_to_bottom() # 上から2枚まとめて一番下へ
-        5: ability_middle_to_top()      # 真ん中を一番上へ
-        6: ability_move_top3_to_bottom() # 上から3枚まとめて一番下へ
-        7: ability_bottom_to_middle()     # 一番下のカードを真ん中へ
-        8: ability_ref_topX_to_bottom() # 参照：上からX枚まとめて一番下へ
+        3: ability_top_to_middle()      # 一番上を真ん中へ
+        4: ability_bottom_to_top()      # 一番下を一番上へ
+        5: ability_cycle_top3()         # 上3枚を1つ回転
+        6: ability_reverse_bottom4()    # 下4枚を逆順
+        7: ability_swap_blocks()        # 上4枚と下4枚を入れ替え
+        8: ability_full_reverse()       # 8枚全体を逆順
         9: ability_sum9_to_bottom()     # 足して9になる2枚を一番下へ
 ```
 

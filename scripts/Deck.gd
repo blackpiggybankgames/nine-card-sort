@@ -113,6 +113,7 @@ func add_card_to_bottom(card_number: int) -> void:
 
 
 # === 能力の実装 ===
+# 注意: 全ての能力は発動カード除外後の8枚に対して適用される
 
 # 能力1: 任意の1枚を一番上へ移動
 func ability_move_to_top(card_number: int) -> void:
@@ -126,34 +127,101 @@ func ability_move_to_top(card_number: int) -> void:
 # 能力2: 任意の1枚を一番下へ移動
 func ability_move_to_bottom(card_number: int) -> void:
 	var index = cards.find(card_number)
-	if index != -1 and index != 8:
+	if index != -1 and index != cards.size() - 1:
 		cards.remove_at(index)
 		cards.push_back(card_number)
 		deck_changed.emit()
 
 
-# 能力3: 任意の1枚を真ん中（5番目）へ移動
-# 発動カード除外後の8枚の状態で、9枚の真ん中の位置（index 3）に挿入
+# 能力3: 一番上のカードを真ん中（4番目と5番目の間）へ移動
+# 発動カード除外後の8枚の状態で、真ん中（index 4）に挿入
+func ability_top_to_middle() -> void:
+	if cards.size() < 2:
+		return
+	var top_card = cards.pop_front()
+	# 8枚の真ん中（index 4）に挿入
+	cards.insert(MIDDLE_INDEX_8CARDS + 1, top_card)
+	deck_changed.emit()
+
+
+# 能力4: 一番下のカードを一番上へ移動
+func ability_bottom_to_top() -> void:
+	if cards.size() < 2:
+		return
+	var bottom_card = cards.pop_back()
+	cards.insert(0, bottom_card)
+	deck_changed.emit()
+
+
+# 能力5: 上3枚を1つ回転させる [A,B,C,D,...]→[C,A,B,D,...]
+func ability_cycle_top3() -> void:
+	if cards.size() < 3:
+		return
+	# 上3枚を取り出す
+	var a = cards[0]
+	var b = cards[1]
+	var c = cards[2]
+	# 回転: [A,B,C] → [C,A,B]
+	cards[0] = c
+	cards[1] = a
+	cards[2] = b
+	deck_changed.emit()
+
+
+# 能力6: 下4枚の順序を逆転させる
+# [A,B,C,D,E,F,G,H] → [A,B,C,D,H,G,F,E]
+func ability_reverse_bottom4() -> void:
+	if cards.size() < 4:
+		return
+	# 下4枚（index 4〜7）を逆順にする
+	var bottom4 = [cards[4], cards[5], cards[6], cards[7]]
+	bottom4.reverse()
+	cards[4] = bottom4[0]
+	cards[5] = bottom4[1]
+	cards[6] = bottom4[2]
+	cards[7] = bottom4[3]
+	deck_changed.emit()
+
+
+# 能力7: 上4枚と下4枚を入れ替える（各ブロック内の順序は維持）
+# [A,B,C,D,E,F,G,H] → [E,F,G,H,A,B,C,D]
+func ability_swap_blocks() -> void:
+	if cards.size() != 8:
+		return
+	var top4 = [cards[0], cards[1], cards[2], cards[3]]
+	var bottom4 = [cards[4], cards[5], cards[6], cards[7]]
+	# 入れ替え
+	cards[0] = bottom4[0]
+	cards[1] = bottom4[1]
+	cards[2] = bottom4[2]
+	cards[3] = bottom4[3]
+	cards[4] = top4[0]
+	cards[5] = top4[1]
+	cards[6] = top4[2]
+	cards[7] = top4[3]
+	deck_changed.emit()
+
+
+# 能力8: 8枚全体の順序を逆転させる
+# [A,B,C,D,E,F,G,H] → [H,G,F,E,D,C,B,A]
+func ability_full_reverse() -> void:
+	cards.reverse()
+	deck_changed.emit()
+
+
+# === 旧能力（参考用・削除予定） ===
+# 以下の関数は互換性のために残していますが、新能力では使用しません
+
+# 旧能力3: 任意の1枚を真ん中へ移動（削除予定）
 func ability_move_to_middle(card_number: int) -> void:
 	var index = cards.find(card_number)
 	if index != -1 and index != MIDDLE_INDEX_8CARDS:
 		cards.remove_at(index)
-		# 9枚の真ん中の位置（発動カード除外後はindex 3）に挿入
 		cards.insert(MIDDLE_INDEX_8CARDS, card_number)
 		deck_changed.emit()
 
 
-# 能力4: 上から2枚をまとめて一番下へ移動（順序を保つ）
-func ability_move_top2_to_bottom() -> void:
-	var first = cards.pop_front()
-	var second = cards.pop_front()
-	cards.push_back(first)
-	cards.push_back(second)
-	deck_changed.emit()
-
-
-# 能力5: 真ん中（5番目）のカードを一番上へ移動
-# 発動カード除外後の8枚の状態で、9枚の真ん中の位置（index 3）のカードを移動
+# 旧能力5: 真ん中を一番上へ移動（削除予定）
 func ability_middle_to_top() -> void:
 	var middle_card = cards[MIDDLE_INDEX_8CARDS]
 	cards.remove_at(MIDDLE_INDEX_8CARDS)
@@ -161,39 +229,10 @@ func ability_middle_to_top() -> void:
 	deck_changed.emit()
 
 
-# 能力6: 上から3枚をまとめて一番下へ移動（順序を保つ）
-func ability_move_top3_to_bottom() -> void:
-	var first = cards.pop_front()
-	var second = cards.pop_front()
-	var third = cards.pop_front()
-	cards.push_back(first)
-	cards.push_back(second)
-	cards.push_back(third)
-	deck_changed.emit()
-
-
-# 能力7: 一番下のカードを真ん中（5番目）へ移動
-# 発動カード除外後の8枚の状態で、9枚の真ん中の位置（index 3）に挿入
+# 旧能力7: 一番下を真ん中へ移動（削除予定）
 func ability_bottom_to_middle() -> void:
 	var bottom_card = cards.pop_back()
 	cards.insert(MIDDLE_INDEX_8CARDS, bottom_card)
-	deck_changed.emit()
-
-
-# 能力8: 次のカードの数字をXとして、上からX枚をまとめて一番下へ移動
-func ability_ref_topX_to_bottom() -> void:
-	var x = get_next_card()  # 次のカードの数字
-	var moved_cards: Array[int] = []
-
-	# X枚を取り出す
-	for i in range(x):
-		if cards.size() > 0:
-			moved_cards.append(cards.pop_front())
-
-	# 順序を保って一番下に追加
-	for card in moved_cards:
-		cards.push_back(card)
-
 	deck_changed.emit()
 
 
@@ -235,33 +274,31 @@ func ability_sum9_to_bottom(card1: int, card2: int) -> bool:
 
 
 # 能力を使用する（カード番号を指定）
-# target_card: 対象選択が必要な能力で使用
+# target_card: 対象選択が必要な能力で使用（1, 2, 9）
 # target_card2: 能力9で2枚目の対象として使用
 func use_ability(card_number: int, target_card: int = -1, target_card2: int = -1) -> bool:
 	match card_number:
-		1:
+		1:  # 引き上げ: 任意の1枚を一番上へ
 			if target_card == -1:
 				return false
 			ability_move_to_top(target_card)
-		2:
+		2:  # 押し下げ: 任意の1枚を一番下へ
 			if target_card == -1:
 				return false
 			ability_move_to_bottom(target_card)
-		3:
-			if target_card == -1:
-				return false
-			ability_move_to_middle(target_card)
-		4:
-			ability_move_top2_to_bottom()
-		5:
-			ability_middle_to_top()
-		6:
-			ability_move_top3_to_bottom()
-		7:
-			ability_bottom_to_middle()
-		8:
-			ability_ref_topX_to_bottom()
-		9:
+		3:  # 中央送り: 一番上を真ん中へ
+			ability_top_to_middle()
+		4:  # 底引き上げ: 一番下を一番上へ
+			ability_bottom_to_top()
+		5:  # サイクル: 上3枚を1つ回転
+			ability_cycle_top3()
+		6:  # 下半分リバース: 下4枚を逆順
+			ability_reverse_bottom4()
+		7:  # ブロック入れ替え: 上4枚⇔下4枚
+			ability_swap_blocks()
+		8:  # フルリバース: 8枚全体を逆順
+			ability_full_reverse()
+		9:  # 合計送り: 足して9になる2枚を一番下へ
 			if target_card == -1 or target_card2 == -1:
 				return false
 			return ability_sum9_to_bottom(target_card, target_card2)
