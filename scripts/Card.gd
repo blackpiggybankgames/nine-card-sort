@@ -46,8 +46,12 @@ func _draw() -> void:
 
 # グローバル入力イベントでクリック検出
 func _input(event: InputEvent) -> void:
-	# 非表示の場合はイベントを無視
+	# 非表示または選択不可の場合はイベントを無視
 	if not is_visible_in_tree():
+		return
+
+	# 選択不可の場合はイベントを処理しない（他のUI要素へ伝播させる）
+	if not is_selectable:
 		return
 
 	if event is InputEventMouseButton:

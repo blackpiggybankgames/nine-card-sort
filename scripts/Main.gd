@@ -94,7 +94,9 @@ func _show_clear_screen(turn_count: int) -> void:
 	title_screen.visible = false
 	game_ui.visible = false
 	clear_screen.visible = true
-	deck_display.visible = false  # カードを非表示にしてクリックを防ぐ
+	deck_display.visible = true  # カードを表示してクリア状態を確認できるようにする
+	deck_display.set_all_selectable(false)  # カードのクリックは無効化
+	deck_display.clear_highlights()
 	clear_turn_label.text = str(turn_count) + " 手でクリア！"
 
 
@@ -223,5 +225,9 @@ func _on_title_button_pressed() -> void:
 func _on_debug_clear_button_pressed() -> void:
 	if not debug_mode:
 		return
-	# 現在の手数でクリア画面を表示
-	_on_game_cleared(game_manager.get_turn_count())
+	# 山札をソート済み状態にして勝利判定を発動
+	game_manager.deck.cards = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+	game_manager.deck.deck_changed.emit()
+	# 山札表示を更新してからクリア判定
+	deck_display.update_display(game_manager.get_deck())
+	game_manager.deck.check_win()
