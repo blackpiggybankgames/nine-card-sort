@@ -156,14 +156,14 @@ func ability_drop_second() -> void:
 	deck_changed.emit()
 
 
-# 能力5: 真ん中（4番目 = index 3）を一番上へ移動
-# [A,B,C,D,E,F,G,H] → [D,A,B,C,E,F,G,H]
-func ability_middle_to_top() -> void:
-	if cards.size() < MIDDLE_INDEX_8CARDS + 1:
+# 能力5: 3番目（index 2）を一番上へ移動
+# [A,B,C,D,E,F,G,H] → [C,A,B,D,E,F,G,H]
+func ability_third_to_top() -> void:
+	if cards.size() < 3:
 		return
-	var middle_card = cards[MIDDLE_INDEX_8CARDS]
-	cards.remove_at(MIDDLE_INDEX_8CARDS)
-	cards.insert(0, middle_card)
+	var third_card = cards[2]
+	cards.remove_at(2)
+	cards.insert(0, third_card)
 	deck_changed.emit()
 
 
@@ -303,8 +303,8 @@ func use_ability(card_number: int, target_card: int = -1, target_card2: int = -1
 			ability_top_to_middle()
 		4:  # 2番目落とし: 2番目のカードを一番下へ
 			ability_drop_second()
-		5:  # 中央引き出し: 真ん中を一番上へ
-			ability_middle_to_top()
+		5:  # 3番目引き出し: 3番目を一番上へ
+			ability_third_to_top()
 		6:  # 下半分リバース: 下4枚を逆順
 			ability_reverse_bottom4()
 		7:  # ブロック入れ替え: 上4枚⇔下4枚
