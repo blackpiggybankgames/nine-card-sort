@@ -114,6 +114,11 @@ func _on_turn_started(top_card: int) -> void:
 	deck_display.highlight_top_card()
 	deck_display.set_all_selectable(false)
 
+	# 発動カード（一番上）を山札から分離して表示
+	# 少し待ってからアニメーション開始（山札の移動アニメーションが終わってから）
+	await get_tree().create_timer(deck_display.animation_duration + 0.05).timeout
+	deck_display.separate_active_card()
+
 	# UIを更新
 	_update_turn_ui(top_card)
 	use_ability_btn.disabled = false
@@ -132,6 +137,7 @@ func _update_turn_ui(top_card: int) -> void:
 # 手番終了時
 func _on_turn_ended() -> void:
 	deck_display.clear_highlights()
+	deck_display.reset_separation()  # 発動カードの分離状態をリセット
 
 
 # 対象選択が必要な時

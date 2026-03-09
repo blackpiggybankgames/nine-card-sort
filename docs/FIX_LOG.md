@@ -46,6 +46,7 @@
 | FIX-020 | UI | スマホ画面で表示が崩れる | ストレッチモード設定、動的な画面サイズ対応 | 2026-03-07 |
 | FIX-021 | BUG | クリア後のボタン操作・カード表示問題 | Card入力処理修正、クリア画面でカード表示 | 2026-03-08 |
 | FIX-022 | BUG | 能力3（中央送り）の挿入位置が間違っている | insert位置をindex 4からindex 3に修正 | 2026-03-09 |
+| FIX-023 | UI | 発動カードが山札と区別しにくい | 発動カードを山札から分離して下に表示 | 2026-03-09 |
 
 ---
 
@@ -439,6 +440,30 @@
 **変更ファイル**:
 - `scripts/Deck.gd`
   - `cards.insert(MIDDLE_INDEX_8CARDS + 1, top_card)` → `cards.insert(MIDDLE_INDEX_8CARDS, top_card)`
+
+---
+
+### FIX-023: 発動カードが山札と区別しにくい
+
+**報告**: DEBUG_FEEDBACK.md より
+**優先度**: !! 重要
+**原因**: 発動カード（一番上/一番右）が山札の一部として表示されていたため、「山札8枚 + 発動カード1枚」という構造が視覚的にわかりにくかった
+
+**修正**:
+- 手番開始時に発動カードを山札から分離して下に表示
+- アニメーションで移動させることで「これが今操作するカード」と明確にする
+- 手番終了時に分離状態をリセット
+- `active_card_offset_y`で分離距離を調整可能（デフォルト120px）
+
+**変更ファイル**:
+- `scripts/DeckDisplay.gd`
+  - `active_card_offset_y`設定を追加
+  - `separate_active_card()`: 発動カードを山札から分離表示
+  - `return_active_card_to_deck()`: 発動カードを元の位置に戻す
+  - `reset_separation()`: 分離状態をリセット
+- `scripts/Main.gd`
+  - `_on_turn_started()`: 山札更新後に`separate_active_card()`を呼び出し
+  - `_on_turn_ended()`: `reset_separation()`を呼び出し
 
 ---
 

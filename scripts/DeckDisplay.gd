@@ -18,9 +18,13 @@ const CARD_SCENE_PATH = "res://scenes/Card.tscn"
 @export var animation_duration: float = 0.3  # アニメーション時間（秒）
 @export var animation_enabled: bool = true   # アニメーション有効/無効
 
+# 発動カード分離表示の設定
+@export var active_card_offset_y: float = 120.0  # 発動カードを下にずらす距離
+
 var card_nodes: Dictionary = {}  # card_number -> Card ノード
 var deck_data: Array[int] = []
 var is_animating: bool = false
+var active_card_separated: bool = false  # 発動カードが分離表示中かどうか
 
 
 func _ready() -> void:
@@ -240,3 +244,76 @@ func set_sum9_selectable() -> void:
 					card.set_selectable(false)
 			else:
 				card.set_selectable(false)
+
+
+# === 発動カード分離表示機能 ===
+
+# 発動カード（一番上）を山札から分離して表示
+# 手番開始時に呼び出す
+func separate_active_card() -> void:
+	if deck_data.is_empty():
+		return
+
+	var active_card_number = deck_data[0]
+	var card = card_nodes.get(active_card_number)
+	if not card or not is_instance_valid(card):
+		return
+
+	active_card_separated = true
+	is_animating = true
+
+	# 発動カードの目標位置（山札の下、中央寄り）
+	var target_pos = Vector2(
+		_get_target_position(0).x,  # X座標は一番右のまま
+		active_card_offset_y  # Y座標は下にオフセット
+	)
+	var target_rot = 0.0  # 角度は水平に
+
+	var tween = create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(card, "position", target_pos, animation_duration)
+	tween.tween_property(card, "rotation_degrees", target_rot, animation_duration)
+
+	# z_indexを最前面に
+	card.z_index = 100
+
+	tween.chain().tween_callback(_on_animation_finished)
+
+
+# 発動カードを元の位置（山札の一番上）に戻す
+# 能力キャンセル時などに呼び出す
+func return_active_card_to_deck() -> void:
+	if deck_data.is_empty() or not active_card_separated:
+		return
+
+	var active_card_number = deck_data[0]
+	var card = card_nodes.get(active_card_number)
+	if not card or not is_instance_valid(card):
+		return
+
+	active_card_separated = false
+	is_animating = true
+
+	# 元の位置に戻す
+	var target_pos = _get_target_position(0)
+	var target_rot = _get_target_rotation(0)
+
+	var tween = create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(card, "position", target_pos, animation_duration)
+	tween.tween_property(card, "rotation_degrees", target_rot, animation_duration)
+
+	# z_indexを戻す
+	card.z_index = deck_data.size() - 1
+
+	tween.chain().tween_callback(_on_animation_finished)
+
+
+# 発動カードが分離表示中かどうか
+func is_active_card_separated() -> bool:
+	return active_card_separated
+
+
+# 分離状態をリセット（山札更新時などに呼び出す）
+func reset_separation() -> void:
+	active_card_separated = false
