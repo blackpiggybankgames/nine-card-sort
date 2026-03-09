@@ -246,6 +246,24 @@ func set_sum9_selectable() -> void:
 				card.set_selectable(false)
 
 
+# 指定したカードの隣接カードのみ選択可能に（能力4用）
+func set_adjacent_selectable(first_card: int) -> void:
+	var first_index = deck_data.find(first_card)
+	if first_index == -1:
+		return
+
+	for card_number in card_nodes:
+		var card = card_nodes[card_number]
+		if is_instance_valid(card):
+			var card_index = deck_data.find(card_number)
+			# 隣接（差が1）かどうかチェック
+			if abs(card_index - first_index) == 1:
+				card.set_selectable(true)
+				card.set_highlighted(true)  # 隣接カードもハイライト
+			else:
+				card.set_selectable(false)
+
+
 # === 発動カード分離表示機能 ===
 
 # 発動カード（一番上）を山札から分離して表示

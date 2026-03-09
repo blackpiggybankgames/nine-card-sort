@@ -145,27 +145,35 @@ func ability_top_to_middle() -> void:
 	deck_changed.emit()
 
 
-# 能力4: 一番下のカードを一番上へ移動
-func ability_bottom_to_top() -> void:
-	if cards.size() < 2:
-		return
-	var bottom_card = cards.pop_back()
-	cards.insert(0, bottom_card)
+# 能力4: 任意の隣接2枚を入れ替える
+# index1とindex2は隣接していること（|index1 - index2| == 1）
+func ability_adjacent_swap(card1: int, card2: int) -> bool:
+	var index1 = cards.find(card1)
+	var index2 = cards.find(card2)
+
+	if index1 == -1 or index2 == -1:
+		return false
+
+	# 隣接チェック
+	if abs(index1 - index2) != 1:
+		return false
+
+	# 入れ替え
+	var temp = cards[index1]
+	cards[index1] = cards[index2]
+	cards[index2] = temp
 	deck_changed.emit()
+	return true
 
 
-# 能力5: 上3枚を1つ回転させる [A,B,C,D,...]→[C,A,B,D,...]
-func ability_cycle_top3() -> void:
-	if cards.size() < 3:
+# 能力5: 真ん中（4番目 = index 3）を一番上へ移動
+# [A,B,C,D,E,F,G,H] → [D,A,B,C,E,F,G,H]
+func ability_middle_to_top() -> void:
+	if cards.size() < MIDDLE_INDEX_8CARDS + 1:
 		return
-	# 上3枚を取り出す
-	var a = cards[0]
-	var b = cards[1]
-	var c = cards[2]
-	# 回転: [A,B,C] → [C,A,B]
-	cards[0] = c
-	cards[1] = a
-	cards[2] = b
+	var middle_card = cards[MIDDLE_INDEX_8CARDS]
+	cards.remove_at(MIDDLE_INDEX_8CARDS)
+	cards.insert(0, middle_card)
 	deck_changed.emit()
 
 
@@ -213,7 +221,7 @@ func ability_full_reverse() -> void:
 # === 旧能力（参考用・削除予定） ===
 # 以下の関数は互換性のために残していますが、新能力では使用しません
 
-# 旧能力3: 任意の1枚を真ん中へ移動（削除予定）
+# 旧能力: 任意の1枚を真ん中へ移動（削除予定）
 func ability_move_to_middle(card_number: int) -> void:
 	var index = cards.find(card_number)
 	if index != -1 and index != MIDDLE_INDEX_8CARDS:
@@ -222,18 +230,32 @@ func ability_move_to_middle(card_number: int) -> void:
 		deck_changed.emit()
 
 
-# 旧能力5: 真ん中を一番上へ移動（削除予定）
-func ability_middle_to_top() -> void:
-	var middle_card = cards[MIDDLE_INDEX_8CARDS]
-	cards.remove_at(MIDDLE_INDEX_8CARDS)
-	cards.insert(0, middle_card)
-	deck_changed.emit()
-
-
-# 旧能力7: 一番下を真ん中へ移動（削除予定）
+# 旧能力: 一番下を真ん中へ移動（削除予定）
 func ability_bottom_to_middle() -> void:
 	var bottom_card = cards.pop_back()
 	cards.insert(MIDDLE_INDEX_8CARDS, bottom_card)
+	deck_changed.emit()
+
+
+# 旧能力: 一番下を一番上へ移動（削除予定）
+func ability_bottom_to_top() -> void:
+	if cards.size() < 2:
+		return
+	var bottom_card = cards.pop_back()
+	cards.insert(0, bottom_card)
+	deck_changed.emit()
+
+
+# 旧能力: 上3枚を1つ回転させる（削除予定）
+func ability_cycle_top3() -> void:
+	if cards.size() < 3:
+		return
+	var a = cards[0]
+	var b = cards[1]
+	var c = cards[2]
+	cards[0] = c
+	cards[1] = a
+	cards[2] = b
 	deck_changed.emit()
 
 
@@ -289,10 +311,12 @@ func use_ability(card_number: int, target_card: int = -1, target_card2: int = -1
 			ability_move_to_bottom(target_card)
 		3:  # 中央送り: 一番上を真ん中へ
 			ability_top_to_middle()
-		4:  # 底引き上げ: 一番下を一番上へ
-			ability_bottom_to_top()
-		5:  # サイクル: 上3枚を1つ回転
-			ability_cycle_top3()
+		4:  # 隣接スワップ: 任意の隣接2枚を入れ替え
+			if target_card == -1 or target_card2 == -1:
+				return false
+			return ability_adjacent_swap(target_card, target_card2)
+		5:  # 中央引き出し: 真ん中を一番上へ
+			ability_middle_to_top()
 		6:  # 下半分リバース: 下4枚を逆順
 			ability_reverse_bottom4()
 		7:  # ブロック入れ替え: 上4枚⇔下4枚
