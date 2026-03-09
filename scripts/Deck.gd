@@ -134,13 +134,14 @@ func ability_move_to_bottom(card_number: int) -> void:
 
 
 # 能力3: 一番上のカードを真ん中（4番目と5番目の間）へ移動
-# 発動カード除外後の8枚の状態で、真ん中（index 4）に挿入
+# 発動カード除外後の8枚の状態で、真ん中（index 3 = 4番目の位置）に挿入
+# 例: [A,B,C,D,E,F,G,H] → pop_front → [B,C,D,E,F,G,H] → insert(3,A) → [B,C,D,A,E,F,G,H]
 func ability_top_to_middle() -> void:
 	if cards.size() < 2:
 		return
 	var top_card = cards.pop_front()
-	# 8枚の真ん中（index 4）に挿入
-	cards.insert(MIDDLE_INDEX_8CARDS + 1, top_card)
+	# pop_front後は7枚なので、index 3 に挿入すると4番目の位置になる
+	cards.insert(MIDDLE_INDEX_8CARDS, top_card)
 	deck_changed.emit()
 
 
