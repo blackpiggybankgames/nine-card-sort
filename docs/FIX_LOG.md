@@ -1,6 +1,6 @@
 # Fix Log / 修正履歴
 
-**最終更新**: 2026-03-08
+**最終更新**: 2026-03-09
 
 ---
 
@@ -45,6 +45,7 @@
 | FIX-019 | UI | 日本語テキストが文字化け | Noto Sans JPフォント追加、テーマをコードで適用 | 2026-03-07 |
 | FIX-020 | UI | スマホ画面で表示が崩れる | ストレッチモード設定、動的な画面サイズ対応 | 2026-03-07 |
 | FIX-021 | BUG | クリア後のボタン操作・カード表示問題 | Card入力処理修正、クリア画面でカード表示 | 2026-03-08 |
+| FIX-022 | BUG | 能力3（中央送り）の挿入位置が間違っている | insert位置をindex 4からindex 3に修正 | 2026-03-09 |
 
 ---
 
@@ -422,6 +423,22 @@
   - `_show_clear_screen()`で`deck_display.visible = true`に変更
   - `_show_clear_screen()`で`set_all_selectable(false)`と`clear_highlights()`を追加
   - `_on_debug_clear_button_pressed()`で山札を`[1,2,3,4,5,6,7,8,9]`に設定し`check_win()`を呼び出す
+
+---
+
+### FIX-022: 能力3（中央送り）の挿入位置が間違っている
+
+**報告**: DEBUG_FEEDBACK.md より
+**優先度**: !!! 致命的
+**原因**: `ability_top_to_middle()`で`MIDDLE_INDEX_8CARDS + 1`（index 4）に挿入していたため、期待より1つ下に移動していた
+
+**修正**:
+- `MIDDLE_INDEX_8CARDS`（index 3）に直接挿入するよう変更
+- 期待動作: `[A,B,C,D,E,F,G,H]` → `[B,C,D,A,E,F,G,H]`（Aが4番目に移動）
+
+**変更ファイル**:
+- `scripts/Deck.gd`
+  - `cards.insert(MIDDLE_INDEX_8CARDS + 1, top_card)` → `cards.insert(MIDDLE_INDEX_8CARDS, top_card)`
 
 ---
 
