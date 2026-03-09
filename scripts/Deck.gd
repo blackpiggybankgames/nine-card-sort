@@ -145,25 +145,15 @@ func ability_top_to_middle() -> void:
 	deck_changed.emit()
 
 
-# 能力4: 任意の隣接2枚を入れ替える
-# index1とindex2は隣接していること（|index1 - index2| == 1）
-func ability_adjacent_swap(card1: int, card2: int) -> bool:
-	var index1 = cards.find(card1)
-	var index2 = cards.find(card2)
-
-	if index1 == -1 or index2 == -1:
-		return false
-
-	# 隣接チェック
-	if abs(index1 - index2) != 1:
-		return false
-
-	# 入れ替え
-	var temp = cards[index1]
-	cards[index1] = cards[index2]
-	cards[index2] = temp
+# 能力4: 2番目のカードを一番下へ移動
+# [A, B, C, D, E, F, G, H] → [A, C, D, E, F, G, H, B]
+func ability_drop_second() -> void:
+	if cards.size() < 2:
+		return
+	var second_card = cards[1]
+	cards.remove_at(1)
+	cards.push_back(second_card)
 	deck_changed.emit()
-	return true
 
 
 # 能力5: 真ん中（4番目 = index 3）を一番上へ移動
@@ -311,10 +301,8 @@ func use_ability(card_number: int, target_card: int = -1, target_card2: int = -1
 			ability_move_to_bottom(target_card)
 		3:  # 中央送り: 一番上を真ん中へ
 			ability_top_to_middle()
-		4:  # 隣接スワップ: 任意の隣接2枚を入れ替え
-			if target_card == -1 or target_card2 == -1:
-				return false
-			return ability_adjacent_swap(target_card, target_card2)
+		4:  # 2番目落とし: 2番目のカードを一番下へ
+			ability_drop_second()
 		5:  # 中央引き出し: 真ん中を一番上へ
 			ability_middle_to_top()
 		6:  # 下半分リバース: 下4枚を逆順

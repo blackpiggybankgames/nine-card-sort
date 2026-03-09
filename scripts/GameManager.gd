@@ -7,8 +7,6 @@ signal turn_started(top_card: int)      # 手番開始時
 signal turn_ended                        # 手番終了時
 signal ability_used(card: int)           # 能力使用時
 signal target_selection_required(card: int)  # 対象選択が必要な時
-signal ability4_second_selection(first_card: int)  # 能力4で2枚目（隣接）選択が必要な時
-signal ability4_pair_selected(first_card: int, second_card: int)  # 能力4で隣接ペア選択完了時
 signal ability9_second_selection(first_card: int)  # 能力9で2枚目選択が必要な時
 signal ability9_pair_selected(first_card: int, second_card: int)  # 能力9で2枚選択完了時
 signal game_cleared(turn_count: int)     # ゲームクリア時
@@ -92,9 +90,8 @@ func use_ability() -> void:
 # 対象選択が必要な能力かどうか
 func _requires_target_selection(card: int) -> bool:
 	# 1, 2: 任意の1枚を選択
-	# 4: 隣接する2枚を選択
 	# 9: 足して9になる2枚を選択
-	return card in [1, 2, 4, 9]
+	return card in [1, 2, 9]
 
 
 # 対象を選択する（UI側から呼ばれる）
@@ -102,34 +99,8 @@ func select_target(card_number: int) -> void:
 	if current_state != GameState.SELECTING_TARGET:
 		return
 
-	# 能力4は隣接2枚選択が必要
-	if selecting_ability == 4:
-		if card_number not in selected_targets:
-			selected_targets.append(card_number)
-
-		# 1枚目を選択したら、隣接カードのみ選択可能に
-		if selected_targets.size() == 1:
-			ability4_second_selection.emit(selected_targets[0])
-
-		# 2枚選択されたら発動
-		elif selected_targets.size() == 2:
-			var card1 = selected_targets[0]
-			var card2 = selected_targets[1]
-
-			# 隣接チェック（UIで制限しているので基本的に成功）
-			var index1 = deck.cards.find(card1)
-			var index2 = deck.cards.find(card2)
-			if abs(index1 - index2) == 1:
-				# 隣接ペア選択完了のシグナルを発火（UIでハイライト表示用）
-				ability4_pair_selected.emit(card1, card2)
-				_execute_ability(selecting_ability, card1, card2, selecting_ability)
-			else:
-				# 無効な組み合わせ - 選択をリセット
-				selected_targets.clear()
-				target_selection_required.emit(selecting_ability)
-
 	# 能力9は2枚選択が必要（足して9になる組み合わせ）
-	elif selecting_ability == 9:
+	if selecting_ability == 9:
 		if card_number not in selected_targets:
 			selected_targets.append(card_number)
 
@@ -233,7 +204,7 @@ func get_ability_description(card: int) -> String:
 		1: "任意の1枚を一番上へ移動する",
 		2: "任意の1枚を一番下へ移動する",
 		3: "一番上のカードを真ん中へ移動する",
-		4: "隣り合う2枚を入れ替える",
+		4: "2番目のカードを一番下へ移動する",
 		5: "真ん中のカードを一番上へ移動する",
 		6: "下4枚の順序を逆転させる",
 		7: "上4枚と下4枚を入れ替える",
@@ -249,7 +220,7 @@ func get_ability_name(card: int) -> String:
 		1: "引き上げ",
 		2: "押し下げ",
 		3: "中央送り",
-		4: "隣接スワップ",
+		4: "2番目落とし",
 		5: "中央引き出し",
 		6: "下半分リバース",
 		7: "ブロック入れ替え",

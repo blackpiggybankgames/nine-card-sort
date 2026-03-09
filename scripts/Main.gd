@@ -45,8 +45,6 @@ func _ready() -> void:
 	game_manager.turn_started.connect(_on_turn_started)
 	game_manager.turn_ended.connect(_on_turn_ended)
 	game_manager.target_selection_required.connect(_on_target_selection_required)
-	game_manager.ability4_second_selection.connect(_on_ability4_second_selection)
-	game_manager.ability4_pair_selected.connect(_on_ability4_pair_selected)
 	game_manager.ability9_second_selection.connect(_on_ability9_second_selection)
 	game_manager.ability9_pair_selected.connect(_on_ability9_pair_selected)
 	game_manager.game_cleared.connect(_on_game_cleared)
@@ -149,11 +147,7 @@ func _on_target_selection_required(card: int) -> void:
 	cancel_btn.visible = true
 
 	# 対象選択可能なカードをハイライト
-	if card == 4:
-		# 能力4: 隣接2枚を選択可能に
-		deck_display.set_all_selectable(true)
-		instruction_label.text = "入れ替える1枚目を選んでください"
-	elif card == 9:
+	if card == 9:
 		# 能力9: 足して9になる組み合わせを選択可能に
 		deck_display.set_sum9_selectable()
 		instruction_label.text = "1枚目を選んでください"
@@ -165,26 +159,6 @@ func _on_target_selection_required(card: int) -> void:
 		instruction_label.text = "移動するカードを選んでください"
 
 	instruction_label.visible = true
-
-
-# 能力4の2枚目選択時（隣接カード）
-func _on_ability4_second_selection(first_card: int) -> void:
-	# 1枚目をハイライト、隣接カードのみ選択可能に
-	deck_display.set_all_selectable(false)
-	deck_display.set_card_selectable(first_card, false)
-	deck_display.set_card_highlighted(first_card, true)
-
-	# 隣接カードのみ選択可能に
-	deck_display.set_adjacent_selectable(first_card)
-
-	instruction_label.text = str(first_card) + " を選択。隣のカードを選んでください"
-
-
-# 能力4の隣接ペア選択完了時
-func _on_ability4_pair_selected(first_card: int, second_card: int) -> void:
-	# 2枚目もハイライト表示
-	deck_display.set_card_highlighted(second_card, true)
-	instruction_label.text = str(first_card) + " と " + str(second_card) + " を入れ替え！"
 
 
 # 能力9の2枚目選択時

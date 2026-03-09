@@ -69,7 +69,7 @@ var card_abilities: Dictionary = {
     1: "任意の1枚を一番上へ移動",
     2: "任意の1枚を一番下へ移動",
     3: "一番上のカードを真ん中へ移動",
-    4: "隣り合う2枚を入れ替える",
+    4: "2番目のカードを一番下へ移動",
     5: "真ん中のカードを一番上へ移動",
     6: "下4枚の順序を逆転",
     7: "上4枚と下4枚を入れ替え",
@@ -104,7 +104,7 @@ func use_ability(card_number: int):
         1: ability_move_to_top()        # 任意の1枚を一番上へ
         2: ability_move_to_bottom()     # 任意の1枚を一番下へ
         3: ability_top_to_middle()      # 一番上を真ん中へ
-        4: ability_adjacent_swap()      # 隣り合う2枚を入れ替え
+        4: ability_drop_second()        # 2番目を一番下へ
         5: ability_middle_to_top()      # 真ん中を一番上へ
         6: ability_reverse_bottom4()    # 下4枚を逆順
         7: ability_swap_blocks()        # 上4枚と下4枚を入れ替え
