@@ -1,0 +1,42 @@
+# Godot cache and generated files
+.godot/
+
+# Export builds
+build/
+
+# Import metadata (auto-generated)
+*.import
+*.uid
+
+# Export configuration
+export_presets.cfg
+
+# Translation files
+*.translation
+
+# Binary assets - images
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.webp
+
+# Binary assets - audio
+*.wav
+*.ogg
+*.mp3
+
+# Binary assets - fonts
+*.otf
+*.ttf
+*.woff
+*.woff2
+
+# Debug screenshots
+debug_screenshots/
+
+# WSL metadata
+*:Zone.Identifier
+
+# Claude Code local settings
+.claude/settings.local.json
