@@ -151,6 +151,10 @@ func _on_target_selection_required(card: int) -> void:
 		# 能力9: 足して9になる組み合わせを選択可能に
 		deck_display.set_sum9_selectable()
 		instruction_label.text = "1枚目を選んでください"
+	elif card == 3:
+		# 能力3: 端以外のカードを選択可能に
+		deck_display.set_non_edge_selectable()
+		instruction_label.text = "両隣を入れ替えるカードを選んでください（端以外）"
 	else:
 		# 能力1, 2: 任意のカードを選択可能に（一番上以外）
 		deck_display.set_all_selectable(true)

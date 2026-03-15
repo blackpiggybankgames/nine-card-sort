@@ -246,6 +246,22 @@ func set_sum9_selectable() -> void:
 				card.set_selectable(false)
 
 
+# 端以外のカードを選択可能に（能力3用）
+# 発動カード除外後の8枚で、index 0 と index 7 は選択不可
+func set_non_edge_selectable() -> void:
+	for card_number in card_nodes:
+		var card = card_nodes[card_number]
+		if is_instance_valid(card):
+			var card_index = deck_data.find(card_number)
+			# 端は選択不可
+			# deck_dataには発動カード(index 0)を含む9枚が入っている
+			# 残り8枚の端 = index 1（左端）と index 8（右端）
+			if card_index > 1 and card_index < deck_data.size() - 1:
+				card.set_selectable(true)
+			else:
+				card.set_selectable(false)
+
+
 # 指定したカードの隣接カードのみ選択可能に（能力4用）
 func set_adjacent_selectable(first_card: int) -> void:
 	var first_index = deck_data.find(first_card)

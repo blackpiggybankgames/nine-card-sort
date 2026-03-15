@@ -133,14 +133,36 @@ func ability_move_to_bottom(card_number: int) -> void:
 		deck_changed.emit()
 
 
-# 能力3: 一番上のカードを真ん中（4番目と5番目の間）へ移動
-# 発動カード除外後の8枚の状態で、真ん中（index 3 = 4番目の位置）に挿入
-# 例: [A,B,C,D,E,F,G,H] → pop_front → [B,C,D,E,F,G,H] → insert(3,A) → [B,C,D,A,E,F,G,H]
+# 能力3: 選択したカードの両隣を入れ替え、選択カードを一番下へ移動
+# 発動カード除外後の8枚の状態で操作
+# 例: [A,B,C,D,E,F,G,H] で C を選択 → B と D を入れ替え → [A,D,B,E,F,G,H,C]
+# 注意: 端のカード（index 0 と index 7）は両隣がないため選択不可
+func ability_swap_neighbors(selected_card: int) -> bool:
+	var index = cards.find(selected_card)
+
+	# カードが見つからない、または端の場合は失敗
+	if index == -1 or index == 0 or index == cards.size() - 1:
+		return false
+
+	# 両隣のカードを入れ替え
+	var left_card = cards[index - 1]
+	var right_card = cards[index + 1]
+	cards[index - 1] = right_card
+	cards[index + 1] = left_card
+
+	# 選択したカードを一番下へ移動
+	cards.remove_at(index)
+	cards.push_back(selected_card)
+
+	deck_changed.emit()
+	return true
+
+
+# 旧能力3: 一番上のカードを真ん中へ移動（削除予定）
 func ability_top_to_middle() -> void:
 	if cards.size() < 2:
 		return
 	var top_card = cards.pop_front()
-	# pop_front後は7枚なので、index 3 に挿入すると4番目の位置になる
 	cards.insert(MIDDLE_INDEX_8CARDS, top_card)
 	deck_changed.emit()
 
@@ -299,8 +321,10 @@ func use_ability(card_number: int, target_card: int = -1, target_card2: int = -1
 			if target_card == -1:
 				return false
 			ability_move_to_bottom(target_card)
-		3:  # 中央送り: 一番上を真ん中へ
-			ability_top_to_middle()
+		3:  # 隣接入替: 両隣を入れ替え、選択カードを底へ
+			if target_card == -1:
+				return false
+			return ability_swap_neighbors(target_card)
 		4:  # 2番目落とし: 2番目のカードを一番下へ
 			ability_drop_second()
 		5:  # 3番目引き出し: 3番目を一番上へ
