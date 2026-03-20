@@ -4,7 +4,7 @@
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 /** @type {string} */
-const CACHE_VERSION = '1774003383|3494613';
+const CACHE_VERSION = '1774012372|3461337';
 /** @type {string} */
 const CACHE_PREFIX = 'Nine Card Sort-sw-cache-';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
