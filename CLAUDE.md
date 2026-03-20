@@ -3,17 +3,18 @@
 1〜9のカードを能力を使って昇順に並べるソリティアパズル。
 Godot 4.3 / GDScript / Web Export / GitHub Pages配信。
 
-## ドキュメントルーティング
+## ドキュメント
 
-| 作業 | 読むもの |
-|------|----------|
-| 初回・全体把握 | docs/GAME_DESIGN.md → docs/TECHNICAL_SPEC.md |
-| カード能力の実装詳細 | docs/AI_CONTEXT.md（配列操作のコード例） |
+| ドキュメント | 内容 |
+|-------------|------|
+| docs/GAME_DESIGN.md | ゲームルールの定義 |
+| docs/adr/ | 設計判断の記録（なぜこうしたか） |
+
+| 作業 | 参照先 |
+|------|--------|
 | 能力変更・バランス調整 | .claude/skills/change-card/SKILL.md |
 | ルール変更 | .claude/skills/change-rules/SKILL.md |
 | バグ修正 | .claude/skills/fix-bug/SKILL.md |
-| 設計判断の確認 | docs/adr/ |
-| 進捗確認 | docs/PROJECT_STATUS.md |
 
 ## 設計ルール
 
@@ -30,7 +31,7 @@ Godot 4.3 / GDScript / Web Export / GitHub Pages配信。
 
 ### 山札の配列規約
 - index 0 = 一番上、index 8 = 一番下
-- 詳細は docs/AI_CONTEXT.md を参照
+- 能力発動時は発動カードを除外した8枚に対して操作（ADR-001参照）
 
 ## AI行動ルール
 
