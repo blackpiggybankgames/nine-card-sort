@@ -28,10 +28,8 @@ jobs:
           relative_project_path: ./
           use_preset_export_path: true
 
-      - name: Prepare deploy directory
-        run: |
-          mkdir -p build/deploy
-          mv build/Web/* build/deploy/
+      - name: Debug build directory
+        run: find build/ -type f | head -30
 
       - name: Determine deploy directory
         id: deploy-dir
@@ -46,6 +44,6 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build/deploy
+          publish_dir: ./build/Web
           destination_dir: ${{ steps.deploy-dir.outputs.dir }}
           keep_files: true
