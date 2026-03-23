@@ -199,33 +199,11 @@ func get_top_card() -> int:
 	return deck.get_top_card()
 
 
-# 能力の説明テキストを取得
+# 能力の説明テキストを取得（Configから読み込み）
 func get_ability_description(card: int) -> String:
-	var descriptions = {
-		1: "任意の1枚を一番上へ移動する",
-		2: "任意の1枚を一番下へ移動する",
-		3: "選択したカードの両隣を入れ替え、選択カードを一番下へ移動する",
-		4: "2番目のカードを一番下へ移動する",
-		5: "3番目のカードを一番上へ移動する",
-		6: "下4枚の順序を逆転させる",
-		7: "上4枚と下4枚を入れ替える",
-		8: "8枚全体の順序を逆転させる",
-		9: "足して9になる2枚の組み合わせを一番下へ移動する"
-	}
-	return descriptions.get(card, "")
+	return Config.get_ability_description(card)
 
 
-# 能力名を取得
+# 能力名を取得（Configから読み込み）
 func get_ability_name(card: int) -> String:
-	var names = {
-		1: "引き上げ",
-		2: "押し下げ",
-		3: "隣接入替",
-		4: "2番目落とし",
-		5: "3番目引き出し",
-		6: "下半分リバース",
-		7: "ブロック入れ替え",
-		8: "フルリバース",
-		9: "合計送り"
-	}
-	return names.get(card, "")
+	return Config.get_ability_name(card)

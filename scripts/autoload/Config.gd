@@ -24,3 +24,17 @@ func _input(event):
             load_config()
             get_tree().call_group("reloadable", "on_config_reloaded")
             print("Configuration reloaded!")
+
+
+# 能力名を取得
+func get_ability_name(card: int) -> String:
+    var abilities = balance.get("abilities", {})
+    var ability = abilities.get(str(card), {})
+    return ability.get("name", "")
+
+
+# 能力の説明を取得
+func get_ability_description(card: int) -> String:
+    var abilities = balance.get("abilities", {})
+    var ability = abilities.get(str(card), {})
+    return ability.get("description", "")

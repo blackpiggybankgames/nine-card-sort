@@ -7,7 +7,12 @@ Godot 4.3 / GDScript / Web Export / GitHub Pages配信。
 
 | ドキュメント | 内容 |
 |-------------|------|
-| docs/GAME_DESIGN.md | ゲームルールの定義 |
+| docs/CORE_RULES.md | ゲームコンセプト・基本ルール・設計思想 |
+| docs/GAME_FLOW.md | ゲーム進行順序 |
+| docs/GLOSSARY.md | ゲーム用語集 |
+| docs/SYSTEM_SPEC.md | UI要素・物理パラメータ |
+| docs/content/abilities.md | 能力定義（詳細） |
+| docs/content/card_assignments.md | カード番号と能力の対応表 |
 | docs/adr/ | 設計判断の記録（なぜこうしたか） |
 
 | 作業 | 参照先 |

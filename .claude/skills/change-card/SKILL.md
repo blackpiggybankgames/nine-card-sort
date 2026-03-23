@@ -1,23 +1,24 @@
 ---
 name: change-card
-description: カード能力の変更・追加・バランス調整
+description: >
+  カード能力の変更・追加・バランス調整を行う。
+  「カード能力を変更」「アビリティを追加」「バランス調整」
+  「change-card.mdを実装」と言われたときに使用。
 ---
+
 ## 読むファイル
-- docs/temp/ability-spec.md があれば読む（なければ docs/temp/*.md を確認）
-- config/game_balance.json（cardsセクション）
-- tests/test_abilities.gd
+- `docs/temp/change-card.md`（なければ `docs/temp/*.md` を確認）
+- `docs/ABILITIES.md`（現在の確定能力一覧）
+- `config/game_balance.json`（cards セクション）
 
 ## 手順
-1. docs/temp/ の一時ドキュメントを読む
-2. 変更計画を提示し承認を待つ
-3. 実装
-4. テスト更新・実行
-5. game_balance.json 更新
-6. 一時ドキュメントを本体に統合し削除
-   - `cat docs/temp/xxx.md >> 統合先ファイル` で末尾に追記
-   - ファイル全体を読み込んで書き直さないこと
-   - 追記後 `rm docs/temp/xxx.md` で削除
+1. `docs/temp/change-card.md` と `docs/ABILITIES.md` を読む
+2. 変更計画を提示 → **人間の承認を待つ**
+3. 実装（`game_balance.json` 更新を含む）
+4. テストファイルが存在すれば `tests/test_abilities.gd` を更新・実行
+5. ログに記録・削除
+   - `docs/abilities-log.md` に変更サマリーを追記（`cat >>` のみ）
+   - `docs/ABILITIES.md` は**触らない**（確定時のみ人間が判断）
+   - `rm docs/temp/change-card.md`
 
-## 注意
-- 面白さに関わる変更は選択肢2-3個を提示し人間が決定
-- 計画を提示して人間の承認を待つ。承認なしに実装しない
+詳細ルールは `references/workflow.md` を参照。
