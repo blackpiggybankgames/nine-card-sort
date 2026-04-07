@@ -20,6 +20,7 @@ Godot 4.3 / GDScript / Web Export / GitHub Pages配信。
 | 能力変更・バランス調整 | .claude/skills/change-card/SKILL.md |
 | ルール変更 | .claude/skills/change-rules/SKILL.md |
 | バグ修正 | .claude/skills/fix-bug/SKILL.md |
+| UI・アニメーション変更 | .claude/skills/change-ui/SKILL.md |
 
 ## 設計ルール
 
@@ -64,6 +65,7 @@ Godot 4.3 / GDScript / Web Export / GitHub Pages配信。
 |--------|------|------|
 | /change-card | カード能力の変更・バランス調整 | 一時ドキュメント名（任意） |
 | /change-rules | ゲームルールの変更 | 一時ドキュメント名（任意） |
+| /change-ui | UI・アニメーションの変更・調整 | 一時ドキュメント名（任意） |
 | /fix-bug | バグ修正 | バグ報告ドキュメント名（任意） |
 | /sync-docs | ドキュメント同期チェック | - |
 
