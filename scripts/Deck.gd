@@ -13,12 +13,6 @@ var cards: Array[int] = []
 # 勝利条件
 const WIN_CONDITION: Array[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
-# 9枚の真ん中のインデックス（常に5番目 = index 4）
-const MIDDLE_INDEX_9CARDS: int = 4
-
-# 発動カード除外後の真ん中のインデックス
-# 発動カードは常にindex 0から除外されるので、9枚のindex 4 → 8枚のindex 3
-const MIDDLE_INDEX_8CARDS: int = 3
 
 
 func _ready() -> void:
@@ -73,9 +67,9 @@ func get_bottom_card() -> int:
 	return cards[8]
 
 
-# 真ん中のカードを取得（9枚の状態用）
+# 真ん中のカードを取得（9枚の状態用、index 4）
 func get_middle_card() -> int:
-	return cards[MIDDLE_INDEX_9CARDS]
+	return cards[4]
 
 
 # 一番上のカードを一番下に移動（毎手番必ず実行）
@@ -115,103 +109,70 @@ func add_card_to_bottom(card_number: int) -> void:
 # === 能力の実装 ===
 # 注意: 全ての能力は発動カード除外後の8枚に対して適用される
 
-# 能力1: 任意の1枚を一番上へ移動
-func ability_move_to_top(card_number: int) -> void:
-	var index = cards.find(card_number)
-	if index != -1 and index != 0:
-		cards.remove_at(index)
-		cards.insert(0, card_number)
-		deck_changed.emit()
-
-
-# 能力2: 任意の1枚を一番下へ移動
-func ability_move_to_bottom(card_number: int) -> void:
-	var index = cards.find(card_number)
-	if index != -1 and index != cards.size() - 1:
-		cards.remove_at(index)
-		cards.push_back(card_number)
-		deck_changed.emit()
-
-
-# 能力3: 選択したカードの両隣を入れ替え、選択カードを一番下へ移動
-# 発動カード除外後の8枚の状態で操作
-# 例: [A,B,C,D,E,F,G,H] で C を選択 → B と D を入れ替え → [A,D,B,E,F,G,H,C]
-# 注意: 端のカード（index 0 と index 7）は両隣がないため選択不可
-func ability_swap_neighbors(selected_card: int) -> bool:
-	var index = cards.find(selected_card)
-
-	# カードが見つからない、または端の場合は失敗
-	if index == -1 or index == 0 or index == cards.size() - 1:
+# 能力1（能力E）: 数値±1のカードと位置を入れ替える
+# source_card と target_card の数値差が1であること
+func ability_swap_adjacent_value(source_card: int, target_card: int) -> bool:
+	if abs(source_card - target_card) != 1:
 		return false
-
-	# 両隣のカードを入れ替え
-	var left_card = cards[index - 1]
-	var right_card = cards[index + 1]
-	cards[index - 1] = right_card
-	cards[index + 1] = left_card
-
-	# 選択したカードを一番下へ移動
-	cards.remove_at(index)
-	cards.push_back(selected_card)
-
+	var idx1 = cards.find(source_card)
+	var idx2 = cards.find(target_card)
+	if idx1 == -1 or idx2 == -1:
+		return false
+	cards[idx1] = target_card
+	cards[idx2] = source_card
 	deck_changed.emit()
 	return true
 
 
-# 旧能力3: 一番上のカードを真ん中へ移動（削除予定）
-func ability_top_to_middle() -> void:
-	if cards.size() < 2:
-		return
-	var top_card = cards.pop_front()
-	cards.insert(MIDDLE_INDEX_8CARDS, top_card)
+# 能力2（能力I）: 隣接3枚を順繰りに移動（左端→右端）
+# top_card: 3枚グループの一番上のカード（index 0〜5 が有効）
+# 例: [A,B,C,D,E] で B を指定 → [A,C,D,B,E]
+func ability_rotate_three(top_card: int) -> bool:
+	var index = cards.find(top_card)
+	# 後ろに2枚必要なので index は cards.size()-3 以内
+	if index == -1 or index > cards.size() - 3:
+		return false
+	var a = cards[index]
+	var b = cards[index + 1]
+	var c = cards[index + 2]
+	cards[index] = b
+	cards[index + 1] = c
+	cards[index + 2] = a
+	deck_changed.emit()
+	return true
+
+
+# 能力3（能力D）: 山札全体（8枚）を逆順にする
+func ability_reverse_all() -> void:
+	cards.reverse()
 	deck_changed.emit()
 
 
-# 能力4: 2番目のカードを一番下へ移動
-# [A, B, C, D, E, F, G, H] → [A, C, D, E, F, G, H, B]
-func ability_drop_second() -> void:
-	if cards.size() < 2:
-		return
-	var second_card = cards[1]
-	cards.remove_at(1)
-	cards.push_back(second_card)
+# 能力4（能力A）: 選択カードの両隣を入れ替え、選択カードを一番下へ移動
+# 端（index 0 と index 7）は選択不可
+func ability_displace(selected_card: int) -> bool:
+	var index = cards.find(selected_card)
+	if index == -1 or index == 0 or index == cards.size() - 1:
+		return false
+	# 両隣を入れ替え
+	var left_card = cards[index - 1]
+	var right_card = cards[index + 1]
+	cards[index - 1] = right_card
+	cards[index + 1] = left_card
+	# 選択カードを一番下へ
+	cards.remove_at(index)
+	cards.push_back(selected_card)
 	deck_changed.emit()
+	return true
 
 
-# 能力5: 3番目（index 2）を一番上へ移動
-# [A,B,C,D,E,F,G,H] → [C,A,B,D,E,F,G,H]
-func ability_third_to_top() -> void:
-	if cards.size() < 3:
-		return
-	var third_card = cards[2]
-	cards.remove_at(2)
-	cards.insert(0, third_card)
-	deck_changed.emit()
-
-
-# 能力6: 下4枚の順序を逆転させる
-# [A,B,C,D,E,F,G,H] → [A,B,C,D,H,G,F,E]
-func ability_reverse_bottom4() -> void:
-	if cards.size() < 4:
-		return
-	# 下4枚（index 4〜7）を逆順にする
-	var bottom4 = [cards[4], cards[5], cards[6], cards[7]]
-	bottom4.reverse()
-	cards[4] = bottom4[0]
-	cards[5] = bottom4[1]
-	cards[6] = bottom4[2]
-	cards[7] = bottom4[3]
-	deck_changed.emit()
-
-
-# 能力7: 上4枚と下4枚を入れ替える（各ブロック内の順序は維持）
-# [A,B,C,D,E,F,G,H] → [E,F,G,H,A,B,C,D]
-func ability_swap_blocks() -> void:
+# 能力5（能力H）: 上4枚と下4枚を入れ替える（各ブロック内の順序は維持）
+# 例: [A,B,C,D,E,F,G,H] → [E,F,G,H,A,B,C,D]
+func ability_swap_halves() -> void:
 	if cards.size() != 8:
 		return
 	var top4 = [cards[0], cards[1], cards[2], cards[3]]
 	var bottom4 = [cards[4], cards[5], cards[6], cards[7]]
-	# 入れ替え
 	cards[0] = bottom4[0]
 	cards[1] = bottom4[1]
 	cards[2] = bottom4[2]
@@ -223,122 +184,173 @@ func ability_swap_blocks() -> void:
 	deck_changed.emit()
 
 
-# 能力8: 8枚全体の順序を逆転させる
-# [A,B,C,D,E,F,G,H] → [H,G,F,E,D,C,B,A]
-func ability_full_reverse() -> void:
-	cards.reverse()
-	deck_changed.emit()
-
-
-# === 旧能力（参考用・削除予定） ===
-# 以下の関数は互換性のために残していますが、新能力では使用しません
-
-# 旧能力: 任意の1枚を真ん中へ移動（削除予定）
-func ability_move_to_middle(card_number: int) -> void:
-	var index = cards.find(card_number)
-	if index != -1 and index != MIDDLE_INDEX_8CARDS:
-		cards.remove_at(index)
-		cards.insert(MIDDLE_INDEX_8CARDS, card_number)
-		deck_changed.emit()
-
-
-# 旧能力: 一番下を真ん中へ移動（削除予定）
-func ability_bottom_to_middle() -> void:
-	var bottom_card = cards.pop_back()
-	cards.insert(MIDDLE_INDEX_8CARDS, bottom_card)
-	deck_changed.emit()
-
-
-# 旧能力: 一番下を一番上へ移動（削除予定）
-func ability_bottom_to_top() -> void:
-	if cards.size() < 2:
-		return
-	var bottom_card = cards.pop_back()
-	cards.insert(0, bottom_card)
-	deck_changed.emit()
-
-
-# 旧能力: 上3枚を1つ回転させる（削除予定）
-func ability_cycle_top3() -> void:
-	if cards.size() < 3:
-		return
-	var a = cards[0]
-	var b = cards[1]
-	var c = cards[2]
-	cards[0] = c
-	cards[1] = a
-	cards[2] = b
-	deck_changed.emit()
-
-
-# 能力9: 足して9になる2枚の組み合わせを一番下へ移動（順序を保つ）
-# 選択された2枚を指定して実行
-func ability_sum9_to_bottom(card1: int, card2: int) -> bool:
-	# 足して9にならない場合は失敗
-	if card1 + card2 != 9:
+# 能力6（能力G）: 隣接2枚×2セットを一番下へ送る（インデックスが低い方のセットが先）
+# pair1_top_card, pair2_top_card: 各セットの上側カード
+func ability_send_pairs_to_bottom(pair1_top_card: int, pair2_top_card: int) -> bool:
+	var idx1 = cards.find(pair1_top_card)
+	var idx2 = cards.find(pair2_top_card)
+	if idx1 == -1 or idx2 == -1:
+		return false
+	# 各セットの2枚目が範囲内か確認
+	if idx1 >= cards.size() - 1 or idx2 >= cards.size() - 1:
+		return false
+	# 重複チェック: 2セットが重ならないこと（隣接もNG）
+	if abs(idx1 - idx2) <= 1:
 		return false
 
-	var index1 = cards.find(card1)
-	var index2 = cards.find(card2)
+	# インデックスが低い（上側）のセットを先に送る
+	var first_top: int = pair1_top_card if idx1 < idx2 else pair2_top_card
+	var second_top: int = pair2_top_card if idx1 < idx2 else pair1_top_card
 
-	if index1 == -1 or index2 == -1:
-		return false
+	# 1セット目を一番下へ
+	var fi = cards.find(first_top)
+	var fc1 = cards[fi]
+	var fc2 = cards[fi + 1]
+	cards.remove_at(fi + 1)
+	cards.remove_at(fi)
+	cards.push_back(fc1)
+	cards.push_back(fc2)
 
-	# 順序を保つために、先に上にある方から処理
-	var first_card: int
-	var second_card: int
-
-	if index1 < index2:
-		first_card = card1
-		second_card = card2
-	else:
-		first_card = card2
-		second_card = card1
-
-	# 先に上にある方を削除
-	cards.remove_at(cards.find(first_card))
-	# 次に下にある方を削除（インデックスがずれるので再検索）
-	cards.remove_at(cards.find(second_card))
-
-	# 順序を保って一番下に追加
-	cards.push_back(first_card)
-	cards.push_back(second_card)
+	# 2セット目を一番下へ（インデックスが変わっているので再検索）
+	var si = cards.find(second_top)
+	var sc1 = cards[si]
+	var sc2 = cards[si + 1]
+	cards.remove_at(si + 1)
+	cards.remove_at(si)
+	cards.push_back(sc1)
+	cards.push_back(sc2)
 
 	deck_changed.emit()
 	return true
 
 
+# 能力7（能力B）: 指定位置に3枚ブロックを差し込む
+# gap_right_card: 挿入ギャップの右側カード（ブロックはこのカードの直前に挿入）
+# block_center_card: 3枚ブロックの中央カード（差し込み先の隣のカードは選択不可）
+func ability_insert_block(gap_right_card: int, block_center_card: int) -> bool:
+	var i = cards.find(gap_right_card)    # 挿入位置（このカードの前に挿入）
+	var j = cards.find(block_center_card)  # ブロック中央
+
+	if i == -1 or j == -1:
+		return false
+	# 先頭の前への挿入はギャップが存在しないのでNG（i >= 1 が必要）
+	if i == 0:
+		return false
+	# ブロック中央は両端不可（前後1枚ずつ必要）
+	if j == 0 or j == cards.size() - 1:
+		return false
+	# 差し込み先に隣接するカード（ギャップ左 = i-1、ギャップ右 = i）は選択不可
+	if j == i - 1 or j == i:
+		return false
+
+	# ブロック（中央±1の3枚）を抽出
+	var block_left = cards[j - 1]
+	var block_center = cards[j]
+	var block_right = cards[j + 1]
+
+	# ブロックを除去（高いインデックスから削除して位置ずれを防ぐ）
+	cards.remove_at(j + 1)
+	cards.remove_at(j)
+	cards.remove_at(j - 1)
+
+	# gap_right_card の新しいインデックスを取得（除去後にずれる）
+	var new_i = cards.find(gap_right_card)
+	if new_i == -1:
+		return false
+
+	# ブロックを挿入（左から順に）
+	cards.insert(new_i, block_right)
+	cards.insert(new_i, block_center)
+	cards.insert(new_i, block_left)
+
+	deck_changed.emit()
+	return true
+
+
+# 能力8（能力F）裏面: 任意カードを指定カードの直前に移動する
+# card_to_move: 移動するカード
+# before_card: このカードの直前に挿入する
+# ※ 表面時はデッキ操作なし（GameManager がフラグを管理）
+func ability_move_before(card_to_move: int, before_card: int) -> bool:
+	var move_idx = cards.find(card_to_move)
+	if move_idx == -1:
+		return false
+	cards.remove_at(move_idx)
+	var insert_idx = cards.find(before_card)
+	if insert_idx == -1:
+		# 挿入先が見つからない場合は元に戻す
+		cards.insert(move_idx, card_to_move)
+		return false
+	cards.insert(insert_idx, card_to_move)
+	deck_changed.emit()
+	return true
+
+
+# 能力9（能力C）: 隣接2枚とその外側2枚の計4枚を逆順にする
+# pair_top_card: 選択した2枚ペアの上側カード
+# 例: [A,B,C,D,E] で B-C を選んだ場合 → 外側は A と D → [D,C,B,A,E]
+func ability_reverse_four(pair_top_card: int) -> bool:
+	var j = cards.find(pair_top_card)  # ペア上側のインデックス
+	if j == -1:
+		return false
+	# 外側4枚が存在する条件: j-1 >= 0 かつ j+2 <= size-1
+	if j == 0 or j + 2 > cards.size() - 1:
+		return false
+	var c0 = cards[j - 1]
+	var c1 = cards[j]
+	var c2 = cards[j + 1]
+	var c3 = cards[j + 2]
+	# 4枚を逆順に並べ替え
+	cards[j - 1] = c3
+	cards[j] = c2
+	cards[j + 1] = c1
+	cards[j + 2] = c0
+	deck_changed.emit()
+	return true
+
+
 # 能力を使用する（カード番号を指定）
-# target_card: 対象選択が必要な能力で使用（1, 2, 9）
-# target_card2: 能力9で2枚目の対象として使用
+# target_card: 1段階目の対象カード
+# target_card2: 2段階目の対象カード（2段階選択の能力）
 func use_ability(card_number: int, target_card: int = -1, target_card2: int = -1) -> bool:
 	match card_number:
-		1:  # 引き上げ: 任意の1枚を一番上へ
-			if target_card == -1:
-				return false
-			ability_move_to_top(target_card)
-		2:  # 押し下げ: 任意の1枚を一番下へ
-			if target_card == -1:
-				return false
-			ability_move_to_bottom(target_card)
-		3:  # 隣接入替: 両隣を入れ替え、選択カードを底へ
-			if target_card == -1:
-				return false
-			return ability_swap_neighbors(target_card)
-		4:  # 2番目落とし: 2番目のカードを一番下へ
-			ability_drop_second()
-		5:  # 3番目引き出し: 3番目を一番上へ
-			ability_third_to_top()
-		6:  # 下半分リバース: 下4枚を逆順
-			ability_reverse_bottom4()
-		7:  # ブロック入れ替え: 上4枚⇔下4枚
-			ability_swap_blocks()
-		8:  # フルリバース: 8枚全体を逆順
-			ability_full_reverse()
-		9:  # 合計送り: 足して9になる2枚を一番下へ
+		1:  # ±1入れ替え: ソースカードと±1カードの2枚が必要
 			if target_card == -1 or target_card2 == -1:
 				return false
-			return ability_sum9_to_bottom(target_card, target_card2)
+			return ability_swap_adjacent_value(target_card, target_card2)
+		2:  # 3枚順繰り: 3枚グループの先頭カードを指定
+			if target_card == -1:
+				return false
+			return ability_rotate_three(target_card)
+		3:  # 全体リバース: 選択不要
+			ability_reverse_all()
+		4:  # どかす: 選択カードを指定（端以外）
+			if target_card == -1:
+				return false
+			return ability_displace(target_card)
+		5:  # 上下入れ替え: 選択不要
+			ability_swap_halves()
+		6:  # 2セット下送り: 各セットの上側カード2枚が必要
+			if target_card == -1 or target_card2 == -1:
+				return false
+			return ability_send_pairs_to_bottom(target_card, target_card2)
+		7:  # 3枚ブロック差し込み: ギャップ右側カードとブロック中央カードが必要
+			if target_card == -1 or target_card2 == -1:
+				return false
+			return ability_insert_block(target_card, target_card2)
+		8:  # 上下反転+任意移動
+			# 表面（target_card == -1）: デッキ操作なし、GameManagerがフラグをトグル
+			if target_card == -1:
+				pass  # no-op
+			else:
+				# 裏面: カードを指定位置へ移動
+				if target_card2 == -1:
+					return false
+				return ability_move_before(target_card, target_card2)
+		9:  # 4枚逆順: ペアの上側カードを指定
+			if target_card == -1:
+				return false
+			return ability_reverse_four(target_card)
 	return true
 
 

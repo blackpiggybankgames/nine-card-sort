@@ -6,9 +6,8 @@ class_name GameManager
 signal turn_started(top_card: int)      # 手番開始時
 signal turn_ended                        # 手番終了時
 signal ability_used(card: int)           # 能力使用時
-signal target_selection_required(card: int)  # 対象選択が必要な時
-signal ability9_second_selection(first_card: int)  # 能力9で2枚目選択が必要な時
-signal ability9_pair_selected(first_card: int, second_card: int)  # 能力9で2枚選択完了時
+signal target_selection_required(card: int)  # 対象選択（1段階目）が必要な時
+signal target_selection_step2_required(card: int, first_target: int)  # 2段階選択の2段階目が必要な時
 signal game_cleared(turn_count: int)     # ゲームクリア時
 
 # ゲームの状態
@@ -22,6 +21,10 @@ enum GameState {
 var current_state: GameState = GameState.TITLE
 var turn_count: int = 0
 var deck: Deck
+
+# カード8のフリップ状態（false=表面、true=裏面）
+# 表面で発動 → 裏面に。裏面で発動 → 任意カードを移動 → 表面に戻る
+var card8_flipped: bool = false
 
 # 対象選択中の情報
 var selecting_ability: int = -1  # 現在選択中の能力
@@ -41,6 +44,7 @@ func _ready() -> void:
 func start_game() -> void:
 	current_state = GameState.PLAYING
 	turn_count = 0
+	card8_flipped = false  # カード8のフリップ状態をリセット
 	deck.shuffle_deck()
 	_start_turn()
 
@@ -89,10 +93,25 @@ func use_ability() -> void:
 
 # 対象選択が必要な能力かどうか
 func _requires_target_selection(card: int) -> bool:
-	# 1, 2: 任意の1枚を選択
-	# 3: 端以外の1枚を選択（両隣入替用）
-	# 9: 足して9になる2枚を選択
-	return card in [1, 2, 3, 9]
+	# 2: 3枚グループの先頭カードを選択
+	# 4: どかすカードを選択（端以外）
+	# 9: ペアトップカードを選択
+	# 1, 6, 7: 2段階選択（1段階目が必要）
+	# 8: 裏面のときのみ2段階選択
+	if card == 8:
+		return card8_flipped
+	return card in [1, 2, 4, 6, 7, 9]
+
+
+# 2段階選択が必要な能力かどうか
+func _requires_two_steps(card: int) -> bool:
+	# 1: ソースカード → ±1ターゲットカード
+	# 6: 1組目ペアトップ → 2組目ペアトップ
+	# 7: ギャップ右側カード → ブロック中央カード
+	# 8（裏面）: 移動カード → 挿入位置カード
+	if card == 8:
+		return card8_flipped
+	return card in [1, 6, 7]
 
 
 # 対象を選択する（UI側から呼ばれる）
@@ -100,34 +119,20 @@ func select_target(card_number: int) -> void:
 	if current_state != GameState.SELECTING_TARGET:
 		return
 
-	# 能力9は2枚選択が必要（足して9になる組み合わせ）
-	if selecting_ability == 9:
-		if card_number not in selected_targets:
-			selected_targets.append(card_number)
+	if selected_targets.size() == 0:
+		# 1段階目の選択
+		selected_targets.append(card_number)
+		if _requires_two_steps(selecting_ability):
+			# 2段階目の選択を促す
+			target_selection_step2_required.emit(selecting_ability, card_number)
+		else:
+			# 1段階選択で完了
+			_execute_ability(selecting_ability, card_number, -1, selecting_ability)
 
-		# 1枚目を選択したら、2枚目（ペア）のみ選択可能に
-		if selected_targets.size() == 1:
-			ability9_second_selection.emit(selected_targets[0])
-
-		# 2枚選択されたら発動
-		elif selected_targets.size() == 2:
-			var card1 = selected_targets[0]
-			var card2 = selected_targets[1]
-
-			# 足して9になるかチェック（UIで制限しているので基本的に成功）
-			if card1 + card2 == 9:
-				# 2枚選択完了のシグナルを発火（UIでハイライト表示用）
-				ability9_pair_selected.emit(card1, card2)
-				# selecting_abilityが手番開始時の一番上のカード
-				_execute_ability(selecting_ability, card1, card2, selecting_ability)
-			else:
-				# 無効な組み合わせ - 選択をリセット
-				selected_targets.clear()
-				target_selection_required.emit(selecting_ability)
-	else:
-		# 1枚選択の能力
-		# selecting_abilityが手番開始時の一番上のカード
-		_execute_ability(selecting_ability, card_number, -1, selecting_ability)
+	elif selected_targets.size() == 1:
+		# 2段階目の選択
+		selected_targets.append(card_number)
+		_execute_ability(selecting_ability, selected_targets[0], selected_targets[1], selecting_ability)
 
 
 # 対象選択をキャンセルする
@@ -154,6 +159,10 @@ func _execute_ability(card: int, target1: int = -1, target2: int = -1, original_
 	if success:
 		ability_used.emit(card)
 		turn_count += 1
+
+		# カード8のフリップ状態をトグル
+		if card == 8:
+			card8_flipped = !card8_flipped
 
 		# 能力発動カードを一番下に追加
 		deck.add_card_to_bottom(ability_card)

@@ -45,8 +45,7 @@ func _ready() -> void:
 	game_manager.turn_started.connect(_on_turn_started)
 	game_manager.turn_ended.connect(_on_turn_ended)
 	game_manager.target_selection_required.connect(_on_target_selection_required)
-	game_manager.ability9_second_selection.connect(_on_ability9_second_selection)
-	game_manager.ability9_pair_selected.connect(_on_ability9_pair_selected)
+	game_manager.target_selection_step2_required.connect(_on_target_selection_step2_required)
 	game_manager.game_cleared.connect(_on_game_cleared)
 	deck_display.card_selected.connect(_on_card_selected)
 
@@ -140,51 +139,62 @@ func _on_turn_ended() -> void:
 	deck_display.reset_separation()  # 発動カードの分離状態をリセット
 
 
-# 対象選択が必要な時
+# 対象選択が必要な時（1段階目）
 func _on_target_selection_required(card: int) -> void:
 	use_ability_btn.disabled = true
 	skip_btn.disabled = true
 	cancel_btn.visible = true
 
-	# 対象選択可能なカードをハイライト
-	if card == 9:
-		# 能力9: 足して9になる組み合わせを選択可能に
-		deck_display.set_sum9_selectable()
-		instruction_label.text = "1枚目を選んでください"
-	elif card == 3:
-		# 能力3: 端以外のカードを選択可能に
-		deck_display.set_non_edge_selectable()
-		instruction_label.text = "両隣を入れ替えるカードを選んでください（端以外）"
-	else:
-		# 能力1, 2: 任意のカードを選択可能に（一番上以外）
-		deck_display.set_all_selectable(true)
-		var top_card = game_manager.get_top_card()
-		deck_display.set_card_selectable(top_card, false)
-		instruction_label.text = "移動するカードを選んでください"
+	match card:
+		1:  # ±1入れ替え: ソースカードを選択（任意の1枚）
+			deck_display.set_all_selectable(true)
+			deck_display.set_card_selectable(game_manager.get_top_card(), false)
+			instruction_label.text = "入れ替えたいカードを選んでください"
+		2:  # 3枚順繰り: 3枚グループの先頭を選択
+			deck_display.set_trio_top_selectable()
+			instruction_label.text = "3枚グループの先頭（上側）カードを選んでください"
+		4:  # どかす: 端以外のカードを選択
+			deck_display.set_non_edge_selectable()
+			instruction_label.text = "どかすカードを選んでください（端は選択不可）"
+		6:  # 2セット下送り: 1組目のペアトップを選択
+			deck_display.set_pair_top_selectable()
+			instruction_label.text = "1組目のペアの上側カードを選んでください"
+		7:  # 3枚ブロック差し込み: ギャップ右側カードを選択
+			deck_display.set_gap_right_selectable()
+			instruction_label.text = "差し込み先（このカードの直前）を選んでください"
+		8:  # 上下反転裏面: 移動するカードを選択
+			deck_display.set_all_selectable(true)
+			deck_display.set_card_selectable(game_manager.get_top_card(), false)
+			instruction_label.text = "移動するカードを選んでください"
+		9:  # 4枚逆順: ペアトップカードを選択
+			deck_display.set_four_reverse_pair_selectable()
+			instruction_label.text = "逆順にする4枚の中央2枚の上側を選んでください"
 
 	instruction_label.visible = true
 
 
-# 能力9の2枚目選択時
-func _on_ability9_second_selection(first_card: int) -> void:
-	# 1枚目をハイライト、2枚目（ペア）のみ選択可能に
+# 2段階選択の2段階目
+func _on_target_selection_step2_required(card: int, first_target: int) -> void:
 	deck_display.set_all_selectable(false)
-	deck_display.set_card_selectable(first_card, false)
-	deck_display.set_card_highlighted(first_card, true)
+	deck_display.set_card_highlighted(first_target, true)
 
-	# ペアのカード（足して9になる相手）のみ選択可能
-	var pair_card = 9 - first_card
-	deck_display.set_card_selectable(pair_card, true)
-	deck_display.set_card_highlighted(pair_card, true)  # 2枚目もハイライト
-
-	instruction_label.text = str(first_card) + " を選択。" + str(pair_card) + " を選んでください"
-
-
-# 能力9の2枚選択完了時
-func _on_ability9_pair_selected(first_card: int, second_card: int) -> void:
-	# 2枚目もハイライト表示
-	deck_display.set_card_highlighted(second_card, true)
-	instruction_label.text = str(first_card) + " と " + str(second_card) + " を選択！"
+	match card:
+		1:  # ±1入れ替え: ±1の数値のカードを選択
+			deck_display.set_adjacent_value_selectable(first_target)
+			instruction_label.text = str(first_target) + " を選択。数値±1のカードを選んでください"
+		6:  # 2セット下送り: 2組目のペアトップを選択（1組目と重複不可）
+			# 1組目のペアをハイライト
+			var partner_idx = game_manager.get_deck().find(first_target) + 1
+			if partner_idx < game_manager.get_deck().size():
+				deck_display.set_card_highlighted(game_manager.get_deck()[partner_idx], true)
+			deck_display.set_pair_top_selectable_excluding(first_target)
+			instruction_label.text = "2組目のペアの上側カードを選んでください"
+		7:  # 3枚ブロック差し込み: ブロック中央カードを選択
+			deck_display.set_block_center_selectable(first_target)
+			instruction_label.text = "差し込む3枚ブロックの中央カードを選んでください（差し込み先の隣は不可）"
+		8:  # 任意移動裏面: 挿入位置カードを選択（このカードの直前に移動）
+			deck_display.set_insertion_target_selectable(first_target)
+			instruction_label.text = "このカードの直前に移動します。挿入位置を選んでください"
 
 
 # カードが選択された時

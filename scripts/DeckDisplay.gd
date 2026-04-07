@@ -230,54 +230,111 @@ func set_card_highlighted(card_number: int, highlighted: bool) -> void:
 		card.set_highlighted(highlighted)
 
 
-# 足して9になる組み合わせのカードを選択可能に
-func set_sum9_selectable() -> void:
-	for card_number in card_nodes:
-		var card = card_nodes[card_number]
-		if is_instance_valid(card):
-			# 足して9になる相手がいるかチェック
-			var partner = 9 - card_number
-			if partner >= 1 and partner <= 9 and partner != card_number:
-				if partner in deck_data:
-					card.set_selectable(true)
-				else:
-					card.set_selectable(false)
-			else:
-				card.set_selectable(false)
-
-
-# 端以外のカードを選択可能に（能力3用）
+# 端以外のカードを選択可能に（カード4「どかす」用）
 # 発動カード除外後の8枚で、index 0 と index 7 は選択不可
+# deck_dataには発動カード(index 0)を含む9枚が入っている
+# 8枚の端 = 9枚のindex 1（左端）と index 8（右端）
 func set_non_edge_selectable() -> void:
 	for card_number in card_nodes:
 		var card = card_nodes[card_number]
 		if is_instance_valid(card):
 			var card_index = deck_data.find(card_number)
-			# 端は選択不可
-			# deck_dataには発動カード(index 0)を含む9枚が入っている
-			# 残り8枚の端 = index 1（左端）と index 8（右端）
-			if card_index > 1 and card_index < deck_data.size() - 1:
-				card.set_selectable(true)
-			else:
-				card.set_selectable(false)
+			card.set_selectable(card_index > 1 and card_index < deck_data.size() - 1)
 
 
-# 指定したカードの隣接カードのみ選択可能に（能力4用）
-func set_adjacent_selectable(first_card: int) -> void:
-	var first_index = deck_data.find(first_card)
-	if first_index == -1:
-		return
-
+# 3枚グループの先頭カードを選択可能に（カード2「3枚順繰り」用）
+# 有効な9-card index: 1〜(size-3)
+# 8-card index 0〜5が有効（後ろに2枚必要）
+func set_trio_top_selectable() -> void:
 	for card_number in card_nodes:
 		var card = card_nodes[card_number]
 		if is_instance_valid(card):
-			var card_index = deck_data.find(card_number)
-			# 隣接（差が1）かどうかチェック
-			if abs(card_index - first_index) == 1:
-				card.set_selectable(true)
-				card.set_highlighted(true)  # 隣接カードもハイライト
-			else:
-				card.set_selectable(false)
+			var idx = deck_data.find(card_number)
+			card.set_selectable(idx >= 1 and idx <= deck_data.size() - 3)
+
+
+# ペアトップカードを選択可能に（カード6「2セット下送り」ステップ1用）
+# 有効な9-card index: 1〜(size-2)（最後のカードはペアにならない）
+func set_pair_top_selectable() -> void:
+	for card_number in card_nodes:
+		var card = card_nodes[card_number]
+		if is_instance_valid(card):
+			var idx = deck_data.find(card_number)
+			card.set_selectable(idx >= 1 and idx <= deck_data.size() - 2)
+
+
+# 1組目を除いたペアトップカードを選択可能に（カード6ステップ2用）
+# first_pair_top: ステップ1で選んだ1組目の上側カード
+func set_pair_top_selectable_excluding(first_pair_top: int) -> void:
+	var first_pair_idx = deck_data.find(first_pair_top)
+	for card_number in card_nodes:
+		var card = card_nodes[card_number]
+		if is_instance_valid(card):
+			var idx = deck_data.find(card_number)
+			var is_valid_pair_top = idx >= 1 and idx <= deck_data.size() - 2
+			# 1組目のペア（first_pair_idx, first_pair_idx+1）と重複する位置はNG
+			# 重複条件: |idx - first_pair_idx| <= 1
+			var overlaps_first = abs(idx - first_pair_idx) <= 1
+			card.set_selectable(is_valid_pair_top and not overlaps_first)
+
+
+# ギャップ右側カードを選択可能に（カード7「3枚ブロック差し込み」ステップ1用）
+# 有効な9-card index: 2〜(size-1)（左隣のカードが必要なので先頭の次以降）
+func set_gap_right_selectable() -> void:
+	for card_number in card_nodes:
+		var card = card_nodes[card_number]
+		if is_instance_valid(card):
+			var idx = deck_data.find(card_number)
+			card.set_selectable(idx >= 2)
+
+
+# ブロック中央カードを選択可能に（カード7ステップ2用）
+# gap_right_card: ステップ1で選んだギャップ右側カード
+# ブロック中央の条件: 8-card index 1〜6（両端不可）かつ差し込み先の隣ではない
+func set_block_center_selectable(gap_right_card: int) -> void:
+	var gap_9idx = deck_data.find(gap_right_card)
+	# 8-card index = 9-card index - 1（発動カードがindex 0にいるため）
+	var gap_i = gap_9idx - 1  # ギャップ右側の8-card index
+	for card_number in card_nodes:
+		var card = card_nodes[card_number]
+		if is_instance_valid(card):
+			var idx_9 = deck_data.find(card_number)
+			var j = idx_9 - 1  # 8-card index
+			# 両端を除く（前後1枚ずつ必要）
+			var is_valid_center = j >= 1 and j <= 6
+			# 差し込み先の隣（ギャップ左 = gap_i-1、ギャップ右 = gap_i）は選択不可
+			var adjacent_to_gap = (j == gap_i - 1 or j == gap_i)
+			card.set_selectable(is_valid_center and not adjacent_to_gap)
+
+
+# ペアトップカードを選択可能に（カード9「4枚逆順」用）
+# 外側2枚が存在する条件: 8-card index 1〜5
+# 9-card index: 2〜6
+func set_four_reverse_pair_selectable() -> void:
+	for card_number in card_nodes:
+		var card = card_nodes[card_number]
+		if is_instance_valid(card):
+			var idx = deck_data.find(card_number)
+			var j = idx - 1  # 8-card index
+			card.set_selectable(j >= 1 and j <= 5)
+
+
+# 挿入位置カードを選択可能に（カード8裏面ステップ2用）
+# card_to_move: 移動するカード（これは選択不可）
+func set_insertion_target_selectable(card_to_move: int) -> void:
+	for card_number in card_nodes:
+		var card = card_nodes[card_number]
+		if is_instance_valid(card):
+			card.set_selectable(card_number != card_to_move)
+
+
+# カード1（±1入れ替え）ステップ2用: ±1の数値のカードを選択可能に
+# source_card: ステップ1で選んだカード
+func set_adjacent_value_selectable(source_card: int) -> void:
+	for card_number in card_nodes:
+		var card = card_nodes[card_number]
+		if is_instance_valid(card):
+			card.set_selectable(abs(card_number - source_card) == 1)
 
 
 # === 発動カード分離表示機能 ===
