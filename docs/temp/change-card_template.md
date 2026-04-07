@@ -2,7 +2,7 @@
 
 <!--
 このテンプレートの使い方:
-1. このファイルを `ability-spec.md` にコピー（_templateを削除）
+1. このファイルを `change-card.md` にコピー（_templateを削除）
 2. 各セクションを記入
 3. 記入が終わったら /change-card スキルを実行
 -->
