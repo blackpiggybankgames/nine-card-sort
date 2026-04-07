@@ -28,6 +28,13 @@ extends Node2D
 # クリア画面
 @onready var clear_turn_label: Label = $UILayer/ClearScreen/TurnCountLabel
 
+# ステップラベル（能力発動中の説明表示）
+@onready var step_label: Label = $UILayer/GameUI/StepLabel
+@onready var step_label_bg: Panel = $UILayer/GameUI/StepLabelBG
+
+# 能力発動アニメーション後にデッキ更新アニメーションをスキップするフラグ
+var _skip_next_deck_update: bool = false
+
 
 func _ready() -> void:
 	# 日本語フォントのテーマを適用
@@ -48,6 +55,7 @@ func _ready() -> void:
 	game_manager.target_selection_step2_required.connect(_on_target_selection_step2_required)
 	game_manager.game_cleared.connect(_on_game_cleared)
 	deck_display.card_selected.connect(_on_card_selected)
+	game_manager.ability_ready.connect(_on_ability_ready)
 
 	# デバッグUIの表示設定
 	_setup_debug_ui()
@@ -108,15 +116,22 @@ func _on_start_button_pressed() -> void:
 
 # 手番開始時
 func _on_turn_started(top_card: int) -> void:
-	# 山札表示を更新
-	deck_display.update_display(game_manager.get_deck())
-	deck_display.highlight_top_card()
-	deck_display.set_all_selectable(false)
-
-	# 発動カード（一番上）を山札から分離して表示
-	# 少し待ってからアニメーション開始（山札の移動アニメーションが終わってから）
-	await get_tree().create_timer(deck_display.animation_duration + 0.05).timeout
-	deck_display.separate_active_card()
+	if _skip_next_deck_update:
+		# 能力発動アニメーション済みのためデッキ更新アニメーションをスキップ
+		_skip_next_deck_update = false
+		deck_display.highlight_top_card()
+		deck_display.set_all_selectable(false)
+		# 短い待機後に次のカードを分離表示
+		await get_tree().create_timer(0.1).timeout
+		deck_display.separate_active_card()
+	else:
+		# 通常フロー: 山札表示を更新してアニメーション
+		deck_display.update_display(game_manager.get_deck())
+		deck_display.highlight_top_card()
+		deck_display.set_all_selectable(false)
+		# 少し待ってからアニメーション開始（山札の移動アニメーションが終わってから）
+		await get_tree().create_timer(deck_display.animation_duration + 0.05).timeout
+		deck_display.separate_active_card()
 
 	# UIを更新
 	_update_turn_ui(top_card)
@@ -239,6 +254,192 @@ func _on_retry_button_pressed() -> void:
 func _on_title_button_pressed() -> void:
 	game_manager.return_to_title()
 	_show_title_screen()
+
+
+# ===== 能力発動アニメーション =====
+
+# ability_readyシグナルで呼ばれる: アニメーション再生後に実際の処理を実行
+func _on_ability_ready(card: int, target1: int, target2: int, ability_card: int) -> void:
+	# ボタンを無効化（アニメーション中は操作不可）
+	use_ability_btn.disabled = true
+	skip_btn.disabled = true
+	cancel_btn.visible = false
+	instruction_label.visible = false
+
+	# 分離アニメーション等が終わるまで待機
+	if deck_display.is_animating:
+		await deck_display.animation_completed
+
+	# 発動カードを除いた8枚のデッキを取得
+	var eight_deck: Array[int] = game_manager.get_deck().duplicate()
+	eight_deck.erase(ability_card)
+
+	# アニメーションステップを計算（副作用なし）
+	var steps: Array = _compute_animation_steps(card, target1, target2, eight_deck)
+
+	# 能力名を表示
+	_show_step_label("【" + game_manager.get_ability_name(card) + "】")
+	await get_tree().create_timer(0.5).timeout
+
+	# 各ステップをアニメーション
+	for step in steps:
+		_show_step_label(step["label"])
+		var step_deck: Array[int] = step["deck"]
+		deck_display.update_display(step_deck)
+		await deck_display.animation_completed
+		await get_tree().create_timer(0.3).timeout
+
+	# 発動カードを一番下へ移動するアニメーション
+	var base_deck: Array[int]
+	if steps.is_empty():
+		base_deck = eight_deck
+	else:
+		base_deck = steps[-1]["deck"]
+	var final_deck: Array[int] = base_deck.duplicate()
+	final_deck.push_back(ability_card)
+	_show_step_label("発動カードを一番下へ移動")
+	deck_display.update_display(final_deck)
+	await deck_display.animation_completed
+	await get_tree().create_timer(0.2).timeout
+
+	_hide_step_label()
+
+	# 表示が最終状態なので次のデッキ更新アニメーションをスキップ
+	_skip_next_deck_update = true
+
+	# 実際のゲームロジックを実行（表示は既に最終状態）
+	game_manager.commit_ability_execution(card, target1, target2, ability_card)
+
+
+# 能力の視覚アニメーションステップを計算する（デッキのコピーで計算、副作用なし）
+# eight_deck: 発動カードを除いた8枚のデッキ
+# 戻り値: {deck: Array[int], label: String} の配列
+func _compute_animation_steps(card: int, target1: int, target2: int, eight_deck: Array[int]) -> Array:
+	var steps: Array = []
+	var d: Array[int] = eight_deck.duplicate()
+
+	match card:
+		1:  # ±1入れ替え
+			var idx1 = d.find(target1)
+			var idx2 = d.find(target2)
+			if idx1 != -1 and idx2 != -1:
+				d[idx1] = target2
+				d[idx2] = target1
+				steps.append({"deck": d.duplicate(), "label": str(target1) + " と " + str(target2) + " の位置を入れ替え"})
+
+		2:  # 3枚順繰り
+			var idx = d.find(target1)
+			if idx != -1 and idx <= d.size() - 3:
+				var a = d[idx]
+				var b = d[idx + 1]
+				var c = d[idx + 2]
+				d[idx] = b
+				d[idx + 1] = c
+				d[idx + 2] = a
+				steps.append({"deck": d.duplicate(), "label": str(a) + " を右端へ移動"})
+
+		3:  # 全体リバース
+			d.reverse()
+			steps.append({"deck": d.duplicate(), "label": "全体の順序を逆転"})
+
+		4:  # どかす（2ステップ）
+			var idx = d.find(target1)
+			if idx != -1 and idx > 0 and idx < d.size() - 1:
+				# ステップ1: 両隣を入れ替え
+				var left = d[idx - 1]
+				var right = d[idx + 1]
+				d[idx - 1] = right
+				d[idx + 1] = left
+				steps.append({"deck": d.duplicate(), "label": str(left) + " と " + str(right) + " の位置を入れ替え"})
+				# ステップ2: 選択カードを一番下へ
+				var selected = d[idx]
+				d.remove_at(idx)
+				d.push_back(selected)
+				steps.append({"deck": d.duplicate(), "label": str(selected) + " を一番下へ移動"})
+
+		5:  # 上下入れ替え
+			var top4 = [d[0], d[1], d[2], d[3]]
+			var bot4 = [d[4], d[5], d[6], d[7]]
+			d[0] = bot4[0]; d[1] = bot4[1]; d[2] = bot4[2]; d[3] = bot4[3]
+			d[4] = top4[0]; d[5] = top4[1]; d[6] = top4[2]; d[7] = top4[3]
+			steps.append({"deck": d.duplicate(), "label": "上4枚と下4枚を入れ替え"})
+
+		6:  # 2セット下送り（2ステップ）
+			var idx1 = d.find(target1)
+			var idx2 = d.find(target2)
+			var first_top = target1 if idx1 < idx2 else target2
+			var second_top = target2 if idx1 < idx2 else target1
+			# ステップ1: 1組目を一番下へ
+			var fi = d.find(first_top)
+			var fc1 = d[fi]
+			var fc2 = d[fi + 1]
+			d.remove_at(fi + 1)
+			d.remove_at(fi)
+			d.push_back(fc1)
+			d.push_back(fc2)
+			steps.append({"deck": d.duplicate(), "label": str(fc1) + "・" + str(fc2) + " を一番下へ"})
+			# ステップ2: 2組目を一番下へ
+			var si = d.find(second_top)
+			var sc1 = d[si]
+			var sc2 = d[si + 1]
+			d.remove_at(si + 1)
+			d.remove_at(si)
+			d.push_back(sc1)
+			d.push_back(sc2)
+			steps.append({"deck": d.duplicate(), "label": str(sc1) + "・" + str(sc2) + " も一番下へ"})
+
+		7:  # 3枚ブロック差し込み
+			var i = d.find(target1)   # ギャップ右側
+			var j = d.find(target2)   # ブロック中央
+			if i != -1 and j != -1 and j > 0 and j < d.size() - 1:
+				var bl = d[j - 1]
+				var bc = d[j]
+				var br = d[j + 1]
+				# 高インデックスから削除（位置ずれ防止）
+				d.remove_at(j + 1)
+				d.remove_at(j)
+				d.remove_at(j - 1)
+				var new_i = d.find(target1)
+				d.insert(new_i, br)
+				d.insert(new_i, bc)
+				d.insert(new_i, bl)
+				steps.append({"deck": d.duplicate(), "label": str(bl) + "・" + str(bc) + "・" + str(br) + " を差し込み"})
+
+		8:  # 上下反転＋任意移動
+			if target1 != -1:  # 裏面: カード移動
+				var move_idx = d.find(target1)
+				if move_idx != -1:
+					d.remove_at(move_idx)
+					var insert_idx = d.find(target2)
+					d.insert(insert_idx, target1)
+					steps.append({"deck": d.duplicate(), "label": str(target1) + " を " + str(target2) + " の前へ移動"})
+			# 表面（target1 == -1）: カード移動なし、ステップなし
+
+		9:  # 4枚逆順
+			var j = d.find(target1)
+			if j != -1 and j > 0 and j + 2 < d.size():
+				var c0 = d[j - 1]
+				var c1 = d[j]
+				var c2 = d[j + 1]
+				var c3 = d[j + 2]
+				d[j - 1] = c3
+				d[j] = c2
+				d[j + 1] = c1
+				d[j + 2] = c0
+				steps.append({"deck": d.duplicate(), "label": str(c0) + "・" + str(c1) + "・" + str(c2) + "・" + str(c3) + " を逆順に"})
+
+	return steps
+
+
+func _show_step_label(text: String) -> void:
+	step_label.text = text
+	step_label.visible = true
+	step_label_bg.visible = true
+
+
+func _hide_step_label() -> void:
+	step_label.visible = false
+	step_label_bg.visible = false
 
 
 # デバッグ: 即座にクリア

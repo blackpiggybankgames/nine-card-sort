@@ -9,6 +9,7 @@ signal ability_used(card: int)           # 能力使用時
 signal target_selection_required(card: int)  # 対象選択（1段階目）が必要な時
 signal target_selection_step2_required(card: int, first_target: int)  # 2段階選択の2段階目が必要な時
 signal game_cleared(turn_count: int)     # ゲームクリア時
+signal ability_ready(card: int, target1: int, target2: int, ability_card: int)  # アニメーション付き発動要求
 
 # ゲームの状態
 enum GameState {
@@ -86,9 +87,8 @@ func use_ability() -> void:
 		selected_targets.clear()
 		target_selection_required.emit(top_card)
 	else:
-		# 対象選択不要な能力はそのまま発動
-		# 能力発動前のカード（手番開始時の一番上）を記憶
-		_execute_ability(top_card, -1, -1, top_card)
+		# 対象選択不要な能力はアニメーション付き発動を要求
+		ability_ready.emit(top_card, -1, -1, top_card)
 
 
 # 対象選択が必要な能力かどうか
@@ -126,13 +126,13 @@ func select_target(card_number: int) -> void:
 			# 2段階目の選択を促す
 			target_selection_step2_required.emit(selecting_ability, card_number)
 		else:
-			# 1段階選択で完了
-			_execute_ability(selecting_ability, card_number, -1, selecting_ability)
+			# 1段階選択で完了 - アニメーション付き発動を要求
+			ability_ready.emit(selecting_ability, card_number, -1, selecting_ability)
 
 	elif selected_targets.size() == 1:
-		# 2段階目の選択
+		# 2段階目の選択 - アニメーション付き発動を要求
 		selected_targets.append(card_number)
-		_execute_ability(selecting_ability, selected_targets[0], selected_targets[1], selecting_ability)
+		ability_ready.emit(selecting_ability, selected_targets[0], selected_targets[1], selecting_ability)
 
 
 # 対象選択をキャンセルする
@@ -146,9 +146,9 @@ func cancel_target_selection() -> void:
 	_start_turn()
 
 
-# 能力を実行する
+# 能力を実際に実行する（Main.gdのアニメーション完了後に呼ばれる）
 # original_top_card: 手番開始時に一番上だったカード（能力発動カード）
-func _execute_ability(card: int, target1: int = -1, target2: int = -1, original_top_card: int = -1) -> void:
+func commit_ability_execution(card: int, target1: int = -1, target2: int = -1, original_top_card: int = -1) -> void:
 	# 能力発動カードを山札から取り除く（能力の効果対象にならないようにする）
 	var ability_card = original_top_card if original_top_card != -1 else card
 	deck.remove_card(ability_card)

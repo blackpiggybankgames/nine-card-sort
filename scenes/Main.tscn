@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://b8iurcg2xupqi"]
+[gd_scene load_steps=7 format=3 uid="uid://b8iurcg2xupqi"]
 
 [ext_resource type="Script" path="res://scripts/Main.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/GameManager.gd" id="2_gm"]
@@ -13,6 +13,13 @@ corner_radius_bottom_left = 8
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(0, 0, 0, 0.7)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_step"]
+bg_color = Color(0, 0, 0, 0.78)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_main")
@@ -228,6 +235,35 @@ theme_override_colors/font_color = Color(1, 1, 0.5, 1)
 theme_override_font_sizes/font_size = 18
 text = "カードを選んでください"
 horizontal_alignment = 1
+
+[node name="StepLabelBG" type="Panel" parent="UILayer/GameUI"]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -220.0
+offset_top = 248.0
+offset_right = 220.0
+offset_bottom = 290.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_step")
+
+[node name="StepLabel" type="Label" parent="UILayer/GameUI"]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -216.0
+offset_top = 251.0
+offset_right = 216.0
+offset_bottom = 287.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 1, 0.65, 1)
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="DebugContainer" type="Control" parent="UILayer/GameUI"]
 layout_mode = 1
