@@ -388,8 +388,9 @@ func set_block_center_selectable(gap_right_card: int) -> void:
 			var j = idx_9 - 1  # 8-card index
 			# 両端を除く（前後1枚ずつ必要）
 			var is_valid_center = j >= 1 and j <= 6
-			# 差し込み先の隣（ギャップ左 = gap_i-1、ギャップ右 = gap_i）は選択不可
-			var adjacent_to_gap = (j == gap_i - 1 or j == gap_i)
+			# ブロック内にギャップ右側カードが含まれる場合は選択不可
+			# ギャップ右 = gap_i として、j-1/j/j+1 のいずれかが gap_i になる場合を除外
+			var adjacent_to_gap = (j == gap_i - 1 or j == gap_i or j == gap_i + 1)
 			card.set_selectable(is_valid_center and not adjacent_to_gap)
 
 

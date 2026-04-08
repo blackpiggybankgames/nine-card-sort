@@ -239,8 +239,9 @@ func ability_insert_block(gap_right_card: int, block_center_card: int) -> bool:
 	# ブロック中央は両端不可（前後1枚ずつ必要）
 	if j == 0 or j == cards.size() - 1:
 		return false
-	# 差し込み先に隣接するカード（ギャップ左 = i-1、ギャップ右 = i）は選択不可
-	if j == i - 1 or j == i:
+	# ブロック内にギャップ右側カードが含まれる場合はNG
+	# j-1/j/j+1 のいずれかが i（gap_right_card の位置）になる場合を除外
+	if j == i - 1 or j == i or j == i + 1:
 		return false
 
 	# ブロック（中央±1の3枚）を抽出

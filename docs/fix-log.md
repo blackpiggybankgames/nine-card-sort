@@ -3,3 +3,16 @@
 バグ修正の履歴。`/fix-bug` スキル完了時にAIが追記する。
 
 ---
+
+## 2026-04-08: カード[7] 3枚ブロック差し込み — カード重なりバグ
+
+**症状**: カード[7]の能力発動後にカードが重なって操作不能になる
+
+**原因**: `set_block_center_selectable`（UI）と `ability_insert_block`（ロジック）で、ブロックの左端がギャップ右側カードと一致するケース（`j == gap_i + 1`）が除外されていなかった。
+
+- `j == gap_i + 1` を選択 → `block_left = gap_right_card` → ブロック除去後に `gap_right_card` が消え `new_i = -1`
+- アニメーションステップがおかしな順序で計算され、表示が壊れた状態でゲームがスタック
+
+**修正**:
+- `DeckDisplay.gd:set_block_center_selectable` — `adjacent_to_gap` に `j == gap_i + 1` を追加（UI側でそもそも選択不可にする）
+- `Deck.gd:ability_insert_block` — `j == i + 1` を除外条件に追加（防御的バリデーション）
