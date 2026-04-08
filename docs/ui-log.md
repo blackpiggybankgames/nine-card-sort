@@ -22,3 +22,21 @@
 - `scenes/Main.tscn`: StepLabel / StepLabelBG ノード追加
 - `scripts/GameManager.gd`: `ability_ready` シグナル追加、`commit_ability_execution()` に改名
 - `scripts/Main.gd`: `_on_ability_ready()` コルーチン・`_compute_animation_steps()` 追加
+
+## 2026-04-08: カード移動アニメーションをコの字（U字）に変更
+
+**対象:** `scripts/DeckDisplay.gd`
+
+**変更内容:**
+- `_animate_cards_to_positions` を `old_deck` を受け取るように変更
+- 大きく移動するカード（位置変化 > 1）が1枚だけの場合、コの字アニメーションを適用
+- コの字: フェーズ1（上昇）→ フェーズ2（水平移動）→ フェーズ3（降下＋隙間詰め）
+- 複数枚が大移動する場合（全体リバース、上下入れ替えなど）は従来の並列アニメーション継続
+
+**追加パラメータ（@export）:**
+- `fly_height = -200.0`
+- `fly_up_duration = 0.15`
+- `fly_horizontal_duration = 0.2`
+- `fly_down_duration = 0.15`
+
+**コの字が適用される主なケース:** スキップ、カード2（3枚順繰り）、カード4ステップ2（どかす）、カード8裏面（任意移動）、発動カード→一番下

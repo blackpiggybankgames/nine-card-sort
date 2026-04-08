@@ -15,8 +15,14 @@ const CARD_SCENE_PATH = "res://scenes/Card.tscn"
 @export var vertical_offset: float = 5.0 # 1枚あたりの垂直オフセット
 
 # アニメーション設定（後から調整しやすいように）
-@export var animation_duration: float = 0.3  # アニメーション時間（秒）
+@export var animation_duration: float = 0.3  # 通常アニメーション時間（秒）
 @export var animation_enabled: bool = true   # アニメーション有効/無効
+
+# コの字アニメーション設定
+@export var fly_height: float = -200.0          # 飛び出し高さ（DeckDisplay中心からの相対Y）
+@export var fly_up_duration: float = 0.15       # 上昇フェーズの時間（秒）
+@export var fly_horizontal_duration: float = 0.2 # 水平移動フェーズの時間（秒）
+@export var fly_down_duration: float = 0.15     # 降下フェーズの時間（秒）
 
 # 発動カード分離表示の設定
 @export var active_card_offset_y: float = 120.0  # 発動カードを下にずらす距離
@@ -62,7 +68,7 @@ func update_display(deck: Array[int]) -> void:
 
 	# アニメーションが有効な場合
 	if animation_enabled and not old_deck.is_empty():
-		_animate_cards_to_positions(deck)
+		_animate_cards_to_positions(deck, old_deck)
 	else:
 		_update_card_positions_immediately(deck)
 
@@ -142,9 +148,89 @@ func _get_target_rotation(index: int) -> float:
 
 
 # カードをアニメーションで移動
-func _animate_cards_to_positions(deck: Array[int]) -> void:
+# コの字（U字）アニメーションを適用するか判定してから実行
+func _animate_cards_to_positions(deck: Array[int], old_deck: Array[int]) -> void:
 	is_animating = true
 
+	# 大きく移動するカード（位置変化 > 1）を特定
+	# 旧デッキに存在しないカード（発動カードが戻ってくる場合）は最大移動扱い
+	const BIG_MOVE_THRESHOLD: int = 1
+	var main_mover: int = -1
+	var big_movers_count: int = 0
+
+	for card_num in deck:
+		var old_idx: int = old_deck.find(card_num)
+		var new_idx: int = deck.find(card_num)
+		var displacement: int
+		if old_idx == -1:
+			displacement = 999  # 旧デッキに存在しない = 大移動とみなす
+		else:
+			displacement = abs(new_idx - old_idx)
+		if displacement > BIG_MOVE_THRESHOLD:
+			big_movers_count += 1
+			if big_movers_count == 1:
+				main_mover = card_num
+
+	# 大きく移動するカードが1枚だけならコの字アニメーション
+	if big_movers_count == 1 and main_mover != -1:
+		_animate_u_shape(deck, main_mover)
+	else:
+		_animate_cards_simple(deck)
+
+
+# コの字（U字）アニメーション
+# 対象カードを上に飛ばし → 横移動 → 降下、と同時に他カードも移動
+func _animate_u_shape(deck: Array[int], main_mover: int) -> void:
+	var mover_card = card_nodes.get(main_mover)
+	if not mover_card or not is_instance_valid(mover_card):
+		# フォールバック: 通常アニメーション
+		_animate_cards_simple(deck)
+		return
+
+	var new_idx: int = deck.find(main_mover)
+	var target_pos: Vector2 = _get_target_position(new_idx)
+	var target_rot: float = _get_target_rotation(new_idx)
+
+	# メインムーバーを最前面に表示
+	mover_card.z_index = 200
+
+	# フェーズ1: 上に飛び出す（Y変更・回転を水平に、X固定）
+	var tween1 = create_tween()
+	tween1.set_parallel(true)
+	tween1.tween_property(mover_card, "position:y", fly_height, fly_up_duration)
+	tween1.tween_property(mover_card, "rotation_degrees", 0.0, fly_up_duration)
+	await tween1.finished
+
+	# フェーズ2: 水平移動（X変更、Y固定）
+	var tween2 = create_tween()
+	tween2.tween_property(mover_card, "position:x", target_pos.x, fly_horizontal_duration)
+	await tween2.finished
+
+	# フェーズ3: 目標位置に降下 + 他カードも同時に移動（隙間を詰める）
+	var tween3 = create_tween()
+	tween3.set_parallel(true)
+
+	tween3.tween_property(mover_card, "position:y", target_pos.y, fly_down_duration)
+	tween3.tween_property(mover_card, "rotation_degrees", target_rot, fly_down_duration)
+	mover_card.z_index = deck.size() - 1 - new_idx
+
+	for i in range(deck.size()):
+		var card_num: int = deck[i]
+		if card_num == main_mover:
+			continue
+		var card = card_nodes.get(card_num)
+		if card and is_instance_valid(card):
+			var tp: Vector2 = _get_target_position(i)
+			var tr: float = _get_target_rotation(i)
+			tween3.tween_property(card, "position", tp, fly_down_duration)
+			tween3.tween_property(card, "rotation_degrees", tr, fly_down_duration)
+			card.z_index = deck.size() - 1 - i
+
+	tween3.chain().tween_callback(_on_animation_finished)
+
+
+# 通常アニメーション（全カードを同時に目標位置へ移動）
+func _animate_cards_simple(deck: Array[int]) -> void:
 	var tween = create_tween()
 	tween.set_parallel(true)
 
