@@ -20,6 +20,7 @@ const CARD_SCENE_PATH = "res://scenes/Card.tscn"
 
 # コの字アニメーション設定
 @export var fly_height: float = -200.0          # 飛び出し高さ（DeckDisplay中心からの相対Y）
+@export var fly_depth: float = 250.0            # 底面パス時の最下点Y（発動カードが下側にある場合）
 @export var fly_up_duration: float = 0.15       # 上昇フェーズの時間（秒）
 @export var fly_horizontal_duration: float = 0.2 # 水平移動フェーズの時間（秒）
 @export var fly_down_duration: float = 0.15     # 降下フェーズの時間（秒）
@@ -179,7 +180,8 @@ func _animate_cards_to_positions(deck: Array[int], old_deck: Array[int]) -> void
 
 
 # コの字（U字）アニメーション
-# 対象カードを上に飛ばし → 横移動 → 降下、と同時に他カードも移動
+# 通常: 対象カードを上に飛ばし → 横移動 → 降下
+# 発動カードが下側にある場合（分離表示中）: 下に潜る → 横移動 → 目標位置へ上昇
 func _animate_u_shape(deck: Array[int], main_mover: int) -> void:
 	var mover_card = card_nodes.get(main_mover)
 	if not mover_card or not is_instance_valid(mover_card):
@@ -194,19 +196,33 @@ func _animate_u_shape(deck: Array[int], main_mover: int) -> void:
 	# メインムーバーを最前面に表示
 	mover_card.z_index = 200
 
-	# フェーズ1: 上に飛び出す（Y変更・回転を水平に、X固定）
-	var tween1 = create_tween()
-	tween1.set_parallel(true)
-	tween1.tween_property(mover_card, "position:y", fly_height, fly_up_duration)
-	tween1.tween_property(mover_card, "rotation_degrees", 0.0, fly_up_duration)
-	await tween1.finished
+	# 発動カードが下側（分離表示中）にある場合は底面パスを使用
+	var use_bottom_path: bool = mover_card.position.y > active_card_offset_y * 0.5
 
-	# フェーズ2: 水平移動（X変更、Y固定）
-	var tween2 = create_tween()
-	tween2.tween_property(mover_card, "position:x", target_pos.x, fly_horizontal_duration)
-	await tween2.finished
+	if use_bottom_path:
+		# 底面パス: 下に潜る（Y増加・回転を水平に）→ 水平移動 → 目標位置へ上昇
+		var tween1 = create_tween()
+		tween1.set_parallel(true)
+		tween1.tween_property(mover_card, "position:y", fly_depth, fly_up_duration)
+		tween1.tween_property(mover_card, "rotation_degrees", 0.0, fly_up_duration)
+		await tween1.finished
 
-	# フェーズ3: 目標位置に降下 + 他カードも同時に移動（隙間を詰める）
+		var tween2 = create_tween()
+		tween2.tween_property(mover_card, "position:x", target_pos.x, fly_horizontal_duration)
+		await tween2.finished
+	else:
+		# 上部パス: 上に飛び出す（Y減少・回転を水平に）→ 水平移動
+		var tween1 = create_tween()
+		tween1.set_parallel(true)
+		tween1.tween_property(mover_card, "position:y", fly_height, fly_up_duration)
+		tween1.tween_property(mover_card, "rotation_degrees", 0.0, fly_up_duration)
+		await tween1.finished
+
+		var tween2 = create_tween()
+		tween2.tween_property(mover_card, "position:x", target_pos.x, fly_horizontal_duration)
+		await tween2.finished
+
+	# フェーズ3: 目標位置へ移動 + 他カードも同時に移動（隙間を詰める）
 	var tween3 = create_tween()
 	tween3.set_parallel(true)
 
@@ -227,6 +243,16 @@ func _animate_u_shape(deck: Array[int], main_mover: int) -> void:
 			card.z_index = deck.size() - 1 - i
 
 	tween3.chain().tween_callback(_on_animation_finished)
+
+
+# 山札を更新して表示（コの字なし・一直線アニメーション固定）
+# 発動カードを一番下へ移動する最終ステップ用
+func update_display_simple(deck: Array[int]) -> void:
+	deck_data = deck
+	if animation_enabled:
+		_animate_cards_simple(deck)
+	else:
+		_update_card_positions_immediately(deck)
 
 
 # 通常アニメーション（全カードを同時に目標位置へ移動）

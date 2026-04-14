@@ -298,7 +298,7 @@ func _on_ability_ready(card: int, target1: int, target2: int, ability_card: int)
 	var final_deck: Array[int] = base_deck.duplicate()
 	final_deck.push_back(ability_card)
 	_show_step_label("発動カードを一番下へ移動")
-	deck_display.update_display(final_deck)
+	deck_display.update_display_simple(final_deck)  # 一直線アニメーション（スキップと同じ軌道）
 	await deck_display.animation_completed
 	await get_tree().create_timer(0.2).timeout
 
