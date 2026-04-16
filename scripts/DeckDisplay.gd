@@ -521,3 +521,31 @@ func is_active_card_separated() -> bool:
 # 分離状態をリセット（山札更新時などに呼び出す）
 func reset_separation() -> void:
 	active_card_separated = false
+
+
+# カードをカスタム速度でアニメーション（クリア後の山札ソート表示用）
+func update_display_with_duration(deck: Array[int], duration: float) -> void:
+	deck_data = deck
+	if animation_enabled:
+		_animate_cards_with_duration(deck, duration)
+	else:
+		_update_card_positions_immediately(deck)
+
+
+func _animate_cards_with_duration(deck: Array[int], duration: float) -> void:
+	var tween = create_tween()
+	tween.set_parallel(true)
+
+	for i in range(deck.size()):
+		var card_number = deck[i]
+		var card = card_nodes.get(card_number)
+		if card and is_instance_valid(card):
+			var target_pos = _get_target_position(i)
+			var target_rot = _get_target_rotation(i)
+			var target_z = deck.size() - 1 - i
+
+			tween.tween_property(card, "position", target_pos, duration)
+			tween.tween_property(card, "rotation_degrees", target_rot, duration)
+			card.z_index = target_z
+
+	tween.chain().tween_callback(_on_animation_finished)

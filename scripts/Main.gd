@@ -35,6 +35,9 @@ extends Node2D
 # 能力発動アニメーション後にデッキ更新アニメーションをスキップするフラグ
 var _skip_next_deck_update: bool = false
 
+# クリア演出: 能力発動中にズームを先行実施済みかどうかのフラグ
+var _clear_zoom_done: bool = false
+
 
 func _ready() -> void:
 	# 日本語フォントのテーマを適用
@@ -240,7 +243,169 @@ func _on_cancel_button_pressed() -> void:
 
 # ゲームクリア時
 func _on_game_cleared(turn_count: int) -> void:
+	_play_clear_sequence(turn_count)
+
+
+# クリア演出シーケンス（非同期）
+func _play_clear_sequence(turn_count: int) -> void:
+	# スキップ起因のクリアでは表示が未更新の場合があるため同期
+	var gm_deck = game_manager.get_deck()
+	if deck_display.deck_data != gm_deck:
+		deck_display.update_display_simple(gm_deck)
+		await deck_display.animation_completed
+
+	# ズームとヒットストップ演出（能力発動中に先行実施済みの場合はスキップ）
+	var zoom_was_done = _clear_zoom_done
+	_clear_zoom_done = false
+	if not zoom_was_done:
+		await _play_clear_hit_stop()
+
+	# クリア画面を表示（DeckDisplayはデッキが透けて見える）
 	_show_clear_screen(turn_count)
+
+	# バックグラウンドで山札を1始まりの順にソート
+	await _play_clear_sort_animation()
+
+
+# クリア時のズームイン・ヒットストップ演出
+func _play_clear_hit_stop() -> void:
+	# 最後に移動したカード（一番下）を取得
+	if deck_display.deck_data.is_empty():
+		return
+	var last_card_num = deck_display.deck_data[-1]
+	var card_node = deck_display.card_nodes.get(last_card_num)
+	if not card_node or not is_instance_valid(card_node):
+		return
+
+	var viewport_size = get_viewport_rect().size
+	var viewport_center = viewport_size / 2.0
+	var zoom_scale = 2.0
+
+	# ズームイン: 最後のカードを画面中央に拡大
+	var card_local_pos = card_node.position
+	var target_deck_pos = viewport_center - card_local_pos * zoom_scale
+
+	var tween = create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(deck_display, "scale", Vector2(zoom_scale, zoom_scale), 0.35).set_ease(Tween.EASE_OUT)
+	tween.tween_property(deck_display, "position", target_deck_pos, 0.35).set_ease(Tween.EASE_OUT)
+	await tween.finished
+
+	# ヒットストップ: 静止して達成感を演出
+	await get_tree().create_timer(0.5).timeout
+
+
+# 勝利条件を先読みチェック（Deck.is_cyclic_sorted と同じロジック）
+func _will_win(deck: Array[int]) -> bool:
+	for i in range(deck.size()):
+		var current = deck[i]
+		var next_card = deck[(i + 1) % deck.size()]
+		if next_card != current % 9 + 1:
+			return false
+	return true
+
+
+# エフェクトで最も大きく移動したカードを特定（ズームターゲット）
+# eight_deck: エフェクト前の8枚、steps: アニメーションステップ配列
+func _find_zoom_target_card(ability_card: int, eight_deck: Array[int], steps: Array) -> int:
+	if steps.is_empty():
+		# エフェクトなし（カード8表面など）: デッキ先頭カード
+		return eight_deck[0] if not eight_deck.is_empty() else ability_card
+
+	var before: Array[int] = eight_deck
+	var after: Array[int] = steps[-1]["deck"]
+
+	var max_displacement = 0
+	var key_card = ability_card
+
+	for card_num in after:
+		var old_idx = before.find(card_num)
+		var new_idx = after.find(card_num)
+		if old_idx == -1 or new_idx == -1:
+			continue
+		var displacement = abs(new_idx - old_idx)
+		if displacement > max_displacement:
+			max_displacement = displacement
+			key_card = card_num
+
+	return key_card
+
+
+# クリア確定キーカードにスポットライトズームイン（ヒットストップ含む）
+func _zoom_into_key_card(card_num: int) -> void:
+	var card_node = deck_display.card_nodes.get(card_num)
+	if not card_node or not is_instance_valid(card_node):
+		await get_tree().create_timer(0.8).timeout
+		return
+
+	var viewport_size = get_viewport_rect().size
+	var viewport_center = viewport_size / 2.0
+	var zoom_scale = 2.0
+	# ズーム後にキーカードが画面中央に来るようDeckDisplayの位置を計算
+	var card_local_pos = card_node.position
+	var target_deck_pos = viewport_center - card_local_pos * zoom_scale
+
+	var tween = create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(deck_display, "scale", Vector2(zoom_scale, zoom_scale), 0.35).set_ease(Tween.EASE_OUT)
+	tween.tween_property(deck_display, "position", target_deck_pos, 0.35).set_ease(Tween.EASE_OUT)
+	await tween.finished
+
+	# ヒットストップ: 静止して達成感を演出
+	await get_tree().create_timer(0.5).timeout
+
+
+# ズームを解除しながら能力カードを底位置へ移動
+func _move_ability_card_with_zoom_restore(ability_card: int, final_deck: Array[int]) -> void:
+	var viewport_size = get_viewport_rect().size
+	var original_deck_pos = Vector2(viewport_size.x / 2.0, viewport_size.y * 0.45)
+
+	deck_display.deck_data = final_deck
+
+	var tween = create_tween()
+	tween.set_parallel(true)
+
+	# DeckDisplayを元の位置・スケールに戻す
+	tween.tween_property(deck_display, "scale", Vector2(1.0, 1.0), 0.5).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(deck_display, "position", original_deck_pos, 0.5).set_ease(Tween.EASE_IN_OUT)
+
+	# 能力カードを底位置へ移動
+	var card_node = deck_display.card_nodes.get(ability_card)
+	if card_node and is_instance_valid(card_node):
+		var new_idx = final_deck.find(ability_card)
+		var target_card_pos = deck_display._get_target_position(new_idx)
+		var target_card_rot = deck_display._get_target_rotation(new_idx)
+		tween.tween_property(card_node, "position", target_card_pos, 0.5).set_ease(Tween.EASE_IN_OUT)
+		tween.tween_property(card_node, "rotation_degrees", target_card_rot, 0.5).set_ease(Tween.EASE_IN_OUT)
+		card_node.z_index = final_deck.size() - 1 - new_idx
+
+	await tween.finished
+
+
+# クリア後の山札ソートアニメーション（バックグラウンド）
+func _play_clear_sort_animation() -> void:
+	var viewport_size = get_viewport_rect().size
+	var original_deck_pos = Vector2(viewport_size.x / 2.0, viewport_size.y * 0.45)
+
+	# DeckDisplayを元の位置・スケールにゆっくり戻す
+	var restore_tween = create_tween()
+	restore_tween.set_parallel(true)
+	restore_tween.tween_property(deck_display, "scale", Vector2(1.0, 1.0), 0.7).set_ease(Tween.EASE_IN_OUT)
+	restore_tween.tween_property(deck_display, "position", original_deck_pos, 0.7).set_ease(Tween.EASE_IN_OUT)
+	await restore_tween.finished
+
+	# 1が先頭になるまで1枚ずつゆっくりローテーション
+	var current_deck: Array[int] = deck_display.deck_data.duplicate()
+	var one_idx = current_deck.find(1)
+	if one_idx <= 0:
+		return  # 既に1が先頭（または見つからない）
+
+	for i in range(one_idx):
+		await get_tree().create_timer(0.2).timeout
+		var top = current_deck.pop_front()
+		current_deck.push_back(top)
+		deck_display.update_display_with_duration(current_deck, 0.5)
+		await deck_display.animation_completed
 
 
 # リトライボタン
@@ -298,11 +463,19 @@ func _on_ability_ready(card: int, target1: int, target2: int, ability_card: int)
 	var final_deck: Array[int] = base_deck.duplicate()
 	final_deck.push_back(ability_card)
 	_show_step_label("発動カードを一番下へ移動")
-	deck_display.update_display_simple(final_deck)  # 一直線アニメーション（スキップと同じ軌道）
-	await deck_display.animation_completed
-	await get_tree().create_timer(0.2).timeout
 
-	_hide_step_label()
+	# 勝利判定の先読み: クリア確定ならキーカードにズームしてから能力カードを底へ
+	if _will_win(final_deck):
+		_hide_step_label()
+		var key_card = _find_zoom_target_card(ability_card, eight_deck, steps)
+		await _zoom_into_key_card(key_card)
+		await _move_ability_card_with_zoom_restore(ability_card, final_deck)
+		_clear_zoom_done = true
+	else:
+		deck_display.update_display_simple(final_deck)  # 一直線アニメーション（スキップと同じ軌道）
+		await deck_display.animation_completed
+		await get_tree().create_timer(0.2).timeout
+		_hide_step_label()
 
 	# 表示が最終状態なので次のデッキ更新アニメーションをスキップ
 	_skip_next_deck_update = true
