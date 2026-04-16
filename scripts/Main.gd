@@ -59,6 +59,7 @@ func _ready() -> void:
 	game_manager.game_cleared.connect(_on_game_cleared)
 	deck_display.card_selected.connect(_on_card_selected)
 	game_manager.ability_ready.connect(_on_ability_ready)
+	deck_display.insertion_point_selected.connect(_on_insertion_point_selected)
 
 	# デバッグUIの表示設定
 	_setup_debug_ui()
@@ -124,6 +125,7 @@ func _on_turn_started(top_card: int) -> void:
 		_skip_next_deck_update = false
 		deck_display.highlight_top_card()
 		deck_display.set_all_selectable(false)
+		deck_display.hide_insertion_arrows()
 		# 短い待機後に次のカードを分離表示
 		await get_tree().create_timer(0.1).timeout
 		deck_display.separate_active_card()
@@ -132,6 +134,7 @@ func _on_turn_started(top_card: int) -> void:
 		deck_display.update_display(game_manager.get_deck())
 		deck_display.highlight_top_card()
 		deck_display.set_all_selectable(false)
+		deck_display.hide_insertion_arrows()
 		# 少し待ってからアニメーション開始（山札の移動アニメーションが終わってから）
 		await get_tree().create_timer(deck_display.animation_duration + 0.05).timeout
 		deck_display.separate_active_card()
@@ -177,9 +180,13 @@ func _on_target_selection_required(card: int) -> void:
 		6:  # 2セット下送り: 1組目のペアトップを選択
 			deck_display.set_pair_top_selectable()
 			instruction_label.text = "1組目のペアの上側カードを選んでください"
-		7:  # 3枚ブロック差し込み: ギャップ右側カードを選択
-			deck_display.set_gap_right_selectable()
-			instruction_label.text = "差し込み先（このカードの直前）を選んでください"
+		7:  # 3枚ブロック差し込み: 挿入位置を矢印で選択（9-deck index 2〜8）
+			deck_display.set_all_selectable(false)
+			var valid_gaps: Array = []
+			for i in range(2, deck_display.deck_data.size()):
+				valid_gaps.append(i)
+			deck_display.show_insertion_arrows(valid_gaps)
+			instruction_label.text = "差し込み先の矢印を選んでください"
 		8:  # 上下反転裏面: 移動するカードを選択
 			deck_display.set_all_selectable(true)
 			deck_display.set_card_selectable(game_manager.get_top_card(), false)
@@ -210,9 +217,14 @@ func _on_target_selection_step2_required(card: int, first_target: int) -> void:
 		7:  # 3枚ブロック差し込み: ブロック中央カードを選択
 			deck_display.set_block_center_selectable(first_target)
 			instruction_label.text = "差し込む3枚ブロックの中央カードを選んでください（差し込み先の隣は不可）"
-		8:  # 任意移動裏面: 挿入位置カードを選択（このカードの直前に移動）
-			deck_display.set_insertion_target_selectable(first_target)
-			instruction_label.text = "このカードの直前に移動します。挿入位置を選んでください"
+		8:  # 任意移動裏面: 挿入位置を矢印で選択（card_to_move の位置を除く）
+			var move_idx = deck_display.deck_data.find(first_target)
+			var valid_inserts: Array = []
+			for i in range(1, deck_display.deck_data.size()):
+				if i != move_idx:
+					valid_inserts.append(i)
+			deck_display.show_insertion_arrows(valid_inserts)
+			instruction_label.text = "矢印で挿入位置を選んでください（その直前に移動）"
 
 
 # カードが選択された時
@@ -224,6 +236,18 @@ func _on_card_selected(card_number: int) -> void:
 		# （能力9で1枚目選択中はまだSELECTING_TARGET状態なので更新しない）
 		if game_manager.current_state != GameManager.GameState.SELECTING_TARGET:
 			deck_display.update_display(game_manager.get_deck())
+
+
+# 挿入位置矢印がクリックされた時
+func _on_insertion_point_selected(deck9_idx: int) -> void:
+	if game_manager.current_state != GameManager.GameState.SELECTING_TARGET:
+		return
+	deck_display.hide_insertion_arrows()
+	var card_number = deck_display.deck_data[deck9_idx]
+	game_manager.select_target(card_number)
+	# 能力が実行されて状態が変わった場合のみ山札表示を更新
+	if game_manager.current_state != GameManager.GameState.SELECTING_TARGET:
+		deck_display.update_display(game_manager.get_deck())
 
 
 # 能力を使うボタン

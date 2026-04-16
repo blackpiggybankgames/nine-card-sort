@@ -6,6 +6,7 @@ class_name DeckDisplay
 
 signal card_selected(card_number: int)
 signal animation_completed  # アニメーション完了時
+signal insertion_point_selected(deck9_idx: int)  # 挿入位置矢印クリック時
 
 const CARD_SCENE_PATH = "res://scenes/Card.tscn"
 
@@ -32,6 +33,7 @@ var card_nodes: Dictionary = {}  # card_number -> Card ノード
 var deck_data: Array[int] = []
 var is_animating: bool = false
 var active_card_separated: bool = false  # 発動カードが分離表示中かどうか
+var _insertion_arrows: Array = []  # 挿入位置矢印ノードの配列
 
 
 func _ready() -> void:
@@ -530,6 +532,36 @@ func update_display_with_duration(deck: Array[int], duration: float) -> void:
 		_animate_cards_with_duration(deck, duration)
 	else:
 		_update_card_positions_immediately(deck)
+
+
+# === 挿入位置矢印 ===
+
+# 挿入位置矢印を表示する
+# valid_deck9_indices: 矢印を表示する 9-deck インデックスのリスト
+# インデックス k の矢印は「deck_data[k] の直前に挿入」を意味する
+func show_insertion_arrows(valid_deck9_indices: Array) -> void:
+	hide_insertion_arrows()
+	for idx in valid_deck9_indices:
+		# X座標: 9-deck[idx-1] と 9-deck[idx] の中間点
+		var arrow_x: float
+		if idx <= 0:
+			arrow_x = _get_target_position(0).x + card_spacing * 0.5
+		else:
+			arrow_x = (_get_target_position(idx - 1).x + _get_target_position(idx).x) * 0.5
+		# Y座標: カードファンの上方に固定
+		var arrow = InsertionArrow.new(idx)
+		arrow.position = Vector2(arrow_x, -100.0)
+		arrow.insertion_clicked.connect(func(i): insertion_point_selected.emit(i))
+		add_child(arrow)
+		_insertion_arrows.append(arrow)
+
+
+# 挿入位置矢印を非表示にして削除する
+func hide_insertion_arrows() -> void:
+	for arrow in _insertion_arrows:
+		if is_instance_valid(arrow):
+			arrow.queue_free()
+	_insertion_arrows.clear()
 
 
 func _animate_cards_with_duration(deck: Array[int], duration: float) -> void:
