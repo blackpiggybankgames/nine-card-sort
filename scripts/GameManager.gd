@@ -107,7 +107,7 @@ func _requires_target_selection(card: int) -> bool:
 func _requires_two_steps(card: int) -> bool:
 	# 1: ソースカード → ±1ターゲットカード
 	# 6: 1組目ペアトップ → 2組目ペアトップ
-	# 7: ギャップ右側カード → ブロック中央カード
+	# 7: ブロック中央カード → ギャップ右側カード（矢印）
 	# 8（裏面）: 移動カード → 挿入位置カード
 	if card == 8:
 		return card8_flipped

@@ -180,13 +180,9 @@ func _on_target_selection_required(card: int) -> void:
 		6:  # 2セット下送り: 1組目のペアトップを選択
 			deck_display.set_pair_top_selectable()
 			instruction_label.text = "1組目のペアの上側カードを選んでください"
-		7:  # 3枚ブロック差し込み: 挿入位置を矢印で選択（9-deck index 2〜8）
-			deck_display.set_all_selectable(false)
-			var valid_gaps: Array = []
-			for i in range(2, deck_display.deck_data.size()):
-				valid_gaps.append(i)
-			deck_display.show_insertion_arrows(valid_gaps)
-			instruction_label.text = "差し込み先の矢印を選んでください"
+		7:  # 3枚ブロック差し込み: まず差し込むブロックの中央カードを選択
+			deck_display.set_block_center_any_selectable()
+			instruction_label.text = "差し込む3枚ブロックの中央カードを選んでください"
 		8:  # 上下反転裏面: 移動するカードを選択
 			deck_display.set_all_selectable(true)
 			deck_display.set_card_selectable(game_manager.get_top_card(), false)
@@ -214,9 +210,25 @@ func _on_target_selection_step2_required(card: int, first_target: int) -> void:
 				deck_display.set_card_highlighted(game_manager.get_deck()[partner_idx], true)
 			deck_display.set_pair_top_selectable_excluding(first_target)
 			instruction_label.text = "2組目のペアの上側カードを選んでください"
-		7:  # 3枚ブロック差し込み: ブロック中央カードを選択
-			deck_display.set_block_center_selectable(first_target)
-			instruction_label.text = "差し込む3枚ブロックの中央カードを選んでください（差し込み先の隣は不可）"
+		7:  # 3枚ブロック差し込み: ブロック中央選択後、有効な差し込み位置を矢印で表示
+			# first_target = block_center_card（ステップ1で選んだカード）
+			var block_center_card = first_target
+			var j_9 = deck_display.deck_data.find(block_center_card)
+			# ブロック3枚をハイライト
+			if j_9 > 0:
+				deck_display.set_card_highlighted(deck_display.deck_data[j_9 - 1], true)
+			deck_display.set_card_highlighted(block_center_card, true)
+			if j_9 < deck_display.deck_data.size() - 1:
+				deck_display.set_card_highlighted(deck_display.deck_data[j_9 + 1], true)
+			# ブロック3枚と重なる位置を除外して矢印を表示
+			# 無効な矢印の9-card index: j_9-1, j_9, j_9+1
+			var invalid_gaps: Array = [j_9 - 1, j_9, j_9 + 1]
+			var valid_gaps: Array = []
+			for k in range(2, deck_display.deck_data.size()):
+				if k not in invalid_gaps:
+					valid_gaps.append(k)
+			deck_display.show_insertion_arrows(valid_gaps)
+			instruction_label.text = "差し込む場所の矢印を選んでください"
 		8:  # 任意移動裏面: 挿入位置を矢印で選択（card_to_move の位置を除く）
 			var move_idx = deck_display.deck_data.find(first_target)
 			var valid_inserts: Array = []
@@ -586,8 +598,9 @@ func _compute_animation_steps(card: int, target1: int, target2: int, eight_deck:
 			steps.append({"deck": d.duplicate(), "label": str(sc1) + "・" + str(sc2) + " も一番下へ"})
 
 		7:  # 3枚ブロック差し込み
-			var i = d.find(target1)   # ギャップ右側
-			var j = d.find(target2)   # ブロック中央
+			# target1 = block_center_card, target2 = gap_right_card（選択順変更後）
+			var i = d.find(target2)   # ギャップ右側
+			var j = d.find(target1)   # ブロック中央
 			if i != -1 and j != -1 and j > 0 and j < d.size() - 1:
 				var bl = d[j - 1]
 				var bc = d[j]
@@ -596,11 +609,19 @@ func _compute_animation_steps(card: int, target1: int, target2: int, eight_deck:
 				d.remove_at(j + 1)
 				d.remove_at(j)
 				d.remove_at(j - 1)
-				var new_i = d.find(target1)
-				d.insert(new_i, br)
-				d.insert(new_i, bc)
-				d.insert(new_i, bl)
-				steps.append({"deck": d.duplicate(), "label": str(bl) + "・" + str(bc) + "・" + str(br) + " を差し込み"})
+				# ギャップ右側カード（target2）の新インデックスを取得（除去後にずれる）
+				# ※target1（ブロック中央）は除去済みなので target2 で検索する
+				var new_i = d.find(target2)
+				if new_i == -1:
+					# 本来UIで防止済みだが万が一の場合はブロックを元に戻す
+					d.insert(j - 1, bl)
+					d.insert(j, bc)
+					d.insert(j + 1, br)
+				else:
+					d.insert(new_i, br)
+					d.insert(new_i, bc)
+					d.insert(new_i, bl)
+					steps.append({"deck": d.duplicate(), "label": str(bl) + "・" + str(bc) + "・" + str(br) + " を差し込み"})
 
 		8:  # 上下反転＋任意移動
 			if target1 != -1:  # 裏面: カード移動

@@ -392,7 +392,7 @@ func set_pair_top_selectable_excluding(first_pair_top: int) -> void:
 			card.set_selectable(is_valid_pair_top and not overlaps_first)
 
 
-# ギャップ右側カードを選択可能に（カード7「3枚ブロック差し込み」ステップ1用）
+# ギャップ右側カードを選択可能に（カード7「3枚ブロック差し込み」旧ステップ1用）
 # 有効な9-card index: 2〜(size-1)（左隣のカードが必要なので先頭の次以降）
 func set_gap_right_selectable() -> void:
 	for card_number in card_nodes:
@@ -400,6 +400,17 @@ func set_gap_right_selectable() -> void:
 		if is_instance_valid(card):
 			var idx = deck_data.find(card_number)
 			card.set_selectable(idx >= 2)
+
+
+# ブロック中央カードを選択可能に（カード7「3枚ブロック差し込み」新ステップ1用）
+# 前後1枚が必要なため両端不可: 8-card index 1〜6 = 9-card index 2〜7
+func set_block_center_any_selectable() -> void:
+	for card_number in card_nodes:
+		var card = card_nodes[card_number]
+		if is_instance_valid(card):
+			var idx = deck_data.find(card_number)
+			var j = idx - 1  # 8-card index（発動カードがindex 0にいるためオフセット）
+			card.set_selectable(j >= 1 and j <= 6)
 
 
 # ブロック中央カードを選択可能に（カード7ステップ2用）

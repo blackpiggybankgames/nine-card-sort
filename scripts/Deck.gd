@@ -257,6 +257,11 @@ func ability_insert_block(gap_right_card: int, block_center_card: int) -> bool:
 	# gap_right_card の新しいインデックスを取得（除去後にずれる）
 	var new_i = cards.find(gap_right_card)
 	if new_i == -1:
+		# 本来上記バリデーションで防止済みだが、万が一の場合はブロックを元の位置に戻す
+		# （そのまま return false するとブロック3枚が山札から永久消失する）
+		cards.insert(j - 1, block_left)
+		cards.insert(j, block_center)
+		cards.insert(j + 1, block_right)
 		return false
 
 	# ブロックを挿入（左から順に）
@@ -335,10 +340,11 @@ func use_ability(card_number: int, target_card: int = -1, target_card2: int = -1
 			if target_card == -1 or target_card2 == -1:
 				return false
 			return ability_send_pairs_to_bottom(target_card, target_card2)
-		7:  # 3枚ブロック差し込み: ギャップ右側カードとブロック中央カードが必要
+		7:  # 3枚ブロック差し込み: ブロック中央カードとギャップ右側カードが必要
+			# target_card = block_center_card, target_card2 = gap_right_card（選択順変更後）
 			if target_card == -1 or target_card2 == -1:
 				return false
-			return ability_insert_block(target_card, target_card2)
+			return ability_insert_block(target_card2, target_card)
 		8:  # 上下反転+任意移動
 			# 表面（target_card == -1）: デッキ操作なし、GameManagerがフラグをトグル
 			if target_card == -1:

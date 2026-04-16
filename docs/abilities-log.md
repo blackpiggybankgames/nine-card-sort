@@ -15,3 +15,18 @@
 | 9 | 合計送り | 4枚逆順（能力C） |
 
 変更ファイル: scripts/Deck.gd, scripts/GameManager.gd, scripts/Main.gd, scripts/DeckDisplay.gd, config/game_balance.json, docs/content/card_assignments.md
+
+## 2026-04-16: カード7「3枚ブロック差し込み」操作順序変更
+
+**変更内容**: 2段階選択の順序を反転
+
+- **変更前**: ①差し込み先（矢印） → ②ブロック中央カード
+- **変更後**: ①ブロック中央カード → ②差し込み先（矢印、ブロックと重ならない位置のみ）
+
+**変更理由**: プレイヤーの思考順（「このブロックをどこかに差し込みたい」）に合わせるため
+
+**変更ファイル**:
+- `scripts/Main.gd`: ステップ1・2のUI切り替えロジック、アニメーションステップのtarget1/target2入れ替え
+- `scripts/DeckDisplay.gd`: `set_block_center_any_selectable()` 関数追加
+- `scripts/Deck.gd`: `use_ability` card 7 の引数順を `ability_insert_block(target2, target1)` に変更
+- `scripts/GameManager.gd`: コメント更新
