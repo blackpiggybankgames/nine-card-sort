@@ -21,6 +21,7 @@ Godot 4.3 / GDScript / Web Export / GitHub Pages配信。
 | ルール変更 | .claude/skills/change-rules/SKILL.md |
 | バグ修正 | .claude/skills/fix-bug/SKILL.md |
 | UI・アニメーション変更 | .claude/skills/change-ui/SKILL.md |
+| プロダクト機能追加 | .claude/skills/add-product/SKILL.md |
 | テストコード作成 | .claude/skills/add-tests/SKILL.md |
 | テスト実行 | .claude/skills/run-tests/SKILL.md |
 
@@ -69,6 +70,7 @@ Godot 4.3 / GDScript / Web Export / GitHub Pages配信。
 | /change-rules | ゲームルールの変更 | 一時ドキュメント名（任意） |
 | /change-ui | UI・アニメーションの変更・調整 | 一時ドキュメント名（任意） |
 | /fix-bug | バグ修正 | バグ報告ドキュメント名（任意） |
+| /add-product | プロダクト機能追加（SNS連携・リザルト等） | 一時ドキュメント名（任意） |
 | /add-tests | テストコード作成（GUT使用） | 一時ドキュメント名（任意） |
 | /run-tests | テスト実行・結果確認 | - |
 | /sync-docs | ドキュメント同期チェック | - |
