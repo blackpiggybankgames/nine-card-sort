@@ -27,6 +27,8 @@ extends Node2D
 
 # クリア画面
 @onready var clear_turn_label: Label = $UILayer/ClearScreen/TurnCountLabel
+@onready var clear_skip_label: Label = $UILayer/ClearScreen/SkipCountLabel
+@onready var clear_stats_container: VBoxContainer = $UILayer/ClearScreen/StatsContainer
 
 # ステップラベル（能力発動中の説明表示）
 @onready var step_label: Label = $UILayer/GameUI/StepLabel
@@ -109,6 +111,36 @@ func _show_clear_screen(turn_count: int) -> void:
 	deck_display.set_all_selectable(false)  # カードのクリックは無効化
 	deck_display.clear_highlights()
 	clear_turn_label.text = str(turn_count) + " 手でクリア！"
+	clear_skip_label.text = "スキップ: " + str(game_manager.get_skip_count()) + " 回"
+	_populate_ability_stats()
+
+
+# 能力発動回数リストをクリア画面に動的生成
+func _populate_ability_stats() -> void:
+	# 既存の行をクリア
+	for child in clear_stats_container.get_children():
+		child.queue_free()
+
+	var counts = game_manager.get_ability_use_counts()
+
+	for card_num in range(1, 10):
+		var row = HBoxContainer.new()
+		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+		var name_label = Label.new()
+		name_label.text = "[" + str(card_num) + "] " + game_manager.get_ability_name(card_num)
+		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		name_label.theme_override_font_sizes = {"font_size": 16}
+
+		var count_label = Label.new()
+		count_label.text = str(counts.get(card_num, 0)) + " 回"
+		count_label.custom_minimum_size = Vector2(52, 0)
+		count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		count_label.theme_override_font_sizes = {"font_size": 16}
+
+		row.add_child(name_label)
+		row.add_child(count_label)
+		clear_stats_container.add_child(row)
 
 
 # ゲーム開始ボタン

@@ -21,6 +21,8 @@ enum GameState {
 
 var current_state: GameState = GameState.TITLE
 var turn_count: int = 0
+var skip_count: int = 0
+var ability_use_counts: Dictionary = {}  # カード番号 → 能力発動回数
 var deck: Deck
 
 # カード8のフリップ状態（false=表面、true=裏面）
@@ -45,6 +47,10 @@ func _ready() -> void:
 func start_game() -> void:
 	current_state = GameState.PLAYING
 	turn_count = 0
+	skip_count = 0
+	ability_use_counts = {}
+	for i in range(1, 10):
+		ability_use_counts[i] = 0
 	card8_flipped = false  # カード8のフリップ状態をリセット
 	deck.shuffle_deck()
 	_start_turn()
@@ -65,6 +71,7 @@ func skip_ability() -> void:
 		return
 
 	turn_count += 1
+	skip_count += 1
 	deck.move_top_to_bottom()
 	turn_ended.emit()
 
@@ -159,6 +166,7 @@ func commit_ability_execution(card: int, target1: int = -1, target2: int = -1, o
 	if success:
 		ability_used.emit(card)
 		turn_count += 1
+		ability_use_counts[card] = ability_use_counts.get(card, 0) + 1
 
 		# カード8のフリップ状態をトグル
 		if card == 8:
@@ -216,3 +224,13 @@ func get_ability_description(card: int) -> String:
 # 能力名を取得（Configから読み込み）
 func get_ability_name(card: int) -> String:
 	return Config.get_ability_name(card)
+
+
+# スキップ回数を取得
+func get_skip_count() -> int:
+	return skip_count
+
+
+# 各カードの能力発動回数を取得
+func get_ability_use_counts() -> Dictionary:
+	return ability_use_counts
