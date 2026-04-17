@@ -25,3 +25,7 @@ window/size/viewport_width=800
 window/size/viewport_height=600
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gut/plugin.cfg")
