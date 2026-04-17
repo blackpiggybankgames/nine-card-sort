@@ -143,11 +143,18 @@ func _populate_ability_stats() -> void:
 		clear_stats_container.add_child(row)
 
 
-# ゲーム開始ボタン
+# フリープレイ開始ボタン
 func _on_start_button_pressed() -> void:
 	_show_game_screen()
-	deck_display.reset()  # カード表示をリセット
-	game_manager.start_game()
+	deck_display.reset()
+	game_manager.start_game(false)
+
+
+# デイリーチャレンジ開始ボタン
+func _on_daily_challenge_button_pressed() -> void:
+	_show_game_screen()
+	deck_display.reset()
+	game_manager.start_game(true)
 
 
 # 手番開始時
@@ -476,11 +483,11 @@ func _play_clear_sort_animation() -> void:
 		await deck_display.animation_completed
 
 
-# リトライボタン
+# リトライボタン（前回と同じモードで再開）
 func _on_retry_button_pressed() -> void:
 	_show_game_screen()
-	deck_display.reset()  # カード表示をリセット
-	game_manager.start_game()
+	deck_display.reset()
+	game_manager.start_game(game_manager.is_daily_mode)
 
 
 # タイトルに戻るボタン

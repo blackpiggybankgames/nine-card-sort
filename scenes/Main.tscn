@@ -92,14 +92,28 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -80.0
-offset_top = 350.0
-offset_right = 80.0
-offset_bottom = 400.0
+offset_left = -100.0
+offset_top = 320.0
+offset_right = 100.0
+offset_bottom = 370.0
 grow_horizontal = 2
 theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("StyleBoxFlat_button")
-text = "スタート"
+text = "フリープレイ"
+
+[node name="DailyChallengeButton" type="Button" parent="UILayer/TitleScreen"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -100.0
+offset_top = 385.0
+offset_right = 100.0
+offset_bottom = 435.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+text = "デイリーチャレンジ"
 
 [node name="GameUI" type="Control" parent="UILayer"]
 visible = false
@@ -403,6 +417,7 @@ theme_override_font_sizes/font_size = 16
 text = "タイトルへ"
 
 [connection signal="pressed" from="UILayer/TitleScreen/StartButton" to="." method="_on_start_button_pressed"]
+[connection signal="pressed" from="UILayer/TitleScreen/DailyChallengeButton" to="." method="_on_daily_challenge_button_pressed"]
 [connection signal="pressed" from="UILayer/GameUI/UseAbilityButton" to="." method="_on_use_ability_button_pressed"]
 [connection signal="pressed" from="UILayer/GameUI/SkipButton" to="." method="_on_skip_button_pressed"]
 [connection signal="pressed" from="UILayer/GameUI/CancelButton" to="." method="_on_cancel_button_pressed"]

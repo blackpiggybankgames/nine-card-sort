@@ -20,10 +20,19 @@ func _ready() -> void:
 	shuffle_deck()
 
 
-# 山札をシャッフルする
-func shuffle_deck() -> void:
+# 山札をシャッフルする（seed指定時は固定シード、-1はランダム）
+func shuffle_deck(shuffle_seed: int = -1) -> void:
 	cards = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-	cards.shuffle()
+	if shuffle_seed >= 0:
+		var rng = RandomNumberGenerator.new()
+		rng.seed = shuffle_seed
+		for i in range(cards.size() - 1, 0, -1):
+			var j = rng.randi_range(0, i)
+			var tmp = cards[i]
+			cards[i] = cards[j]
+			cards[j] = tmp
+	else:
+		cards.shuffle()
 	deck_changed.emit()
 
 

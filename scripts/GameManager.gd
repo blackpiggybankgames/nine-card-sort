@@ -24,6 +24,7 @@ var turn_count: int = 0
 var skip_count: int = 0
 var ability_use_counts: Dictionary = {}  # カード番号 → 能力発動回数
 var deck: Deck
+var is_daily_mode: bool = false
 
 # カード8のフリップ状態（false=表面、true=裏面）
 # 表面で発動 → 裏面に。裏面で発動 → 任意カードを移動 → 表面に戻る
@@ -43,17 +44,28 @@ func _ready() -> void:
 	deck.game_won.connect(_on_game_won)
 
 
-# ゲームを開始する
-func start_game() -> void:
+# ゲームを開始する（daily_mode=trueでJST日付固定シードを使用）
+func start_game(daily_mode: bool = false) -> void:
+	is_daily_mode = daily_mode
 	current_state = GameState.PLAYING
 	turn_count = 0
 	skip_count = 0
 	ability_use_counts = {}
 	for i in range(1, 10):
 		ability_use_counts[i] = 0
-	card8_flipped = false  # カード8のフリップ状態をリセット
-	deck.shuffle_deck()
+	card8_flipped = false
+	if daily_mode:
+		deck.shuffle_deck(get_daily_seed())
+	else:
+		deck.shuffle_deck()
 	_start_turn()
+
+
+# JST（UTC+9）の今日の日付をシードに変換する（YYYYMMDD形式の整数）
+func get_daily_seed() -> int:
+	var jst_unix = Time.get_unix_time_from_system() + 9 * 3600
+	var d = Time.get_date_dict_from_unix_time(jst_unix)
+	return d["year"] * 10000 + d["month"] * 100 + d["day"]
 
 
 # 手番を開始する

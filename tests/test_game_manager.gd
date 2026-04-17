@@ -115,3 +115,45 @@ func test_get_ability_use_counts_has_all_cards() -> void:
 	var counts = gm.get_ability_use_counts()
 	for i in range(1, 10):
 		assert_true(counts.has(i), "get_ability_use_counts()にカード%dのキーが存在する" % i)
+
+# === デイリーモード ===
+
+func test_daily_mode_flag_set_when_started_with_daily() -> void:
+	gm.start_game(true)
+	assert_true(gm.is_daily_mode, "デイリーモードでstart_gameするとis_daily_modeがtrue")
+
+func test_daily_mode_flag_false_when_started_normally() -> void:
+	gm.start_game(false)
+	assert_false(gm.is_daily_mode, "通常モードでstart_gameするとis_daily_modeがfalse")
+
+func test_daily_seed_returns_yyyymmdd_format() -> void:
+	var seed_val = gm.get_daily_seed()
+	# YYYYMMDD形式: 20000101〜99991231 の範囲
+	assert_true(seed_val >= 20000101, "デイリーシードが20000101以上")
+	assert_true(seed_val <= 99991231, "デイリーシードが99991231以下")
+
+func test_daily_seed_is_consistent_within_same_call() -> void:
+	# 同じ瞬間に2回呼んでも同じ値を返す
+	var seed1 = gm.get_daily_seed()
+	var seed2 = gm.get_daily_seed()
+	assert_eq(seed1, seed2, "同じタイミングのget_daily_seed()は同じ値を返す")
+
+func test_daily_mode_produces_fixed_deck() -> void:
+	# 同じシードで2回start_gameすると同じ初期配列になる
+	gm.start_game(true)
+	var deck1 = gm.get_deck().duplicate()
+	gm.start_game(true)
+	var deck2 = gm.get_deck().duplicate()
+	assert_eq(deck1, deck2, "デイリーモードは同じシードで同じ初期配列になる")
+
+func test_free_play_deck_can_differ_from_daily() -> void:
+	# フリープレイは毎回シャッフルされる（確率的テスト: 10回試して1回でも違えばOK）
+	gm.start_game(true)
+	var daily_deck = gm.get_deck().duplicate()
+	var found_difference = false
+	for _i in range(10):
+		gm.start_game(false)
+		if gm.get_deck() != daily_deck:
+			found_difference = true
+			break
+	assert_true(found_difference, "フリープレイはデイリーと異なる配列になりうる")
