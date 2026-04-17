@@ -15,7 +15,7 @@ description: >
 1. `docs/temp/add-product.md` と関連仕様書を読む
 2. 実装計画を提示 → **人間の承認を待つ**
 3. 実装
-4. `/run-tests` スキルでテストを実行（テストファイルが存在する場合のみ）
+4. ゲームロジックを変更・追加した場合、対応するテストケースを `tests/` のファイルに追加・修正する。テストファイルが存在しない場合は `/add-tests` スキルを参考に新規作成する。その後 `/run-tests` スキルで実行
 5. ログに記録・削除
    - `docs/product-log.md` に変更サマリーを追記（`cat >>` のみ）
    - `rm docs/temp/add-product.md`
