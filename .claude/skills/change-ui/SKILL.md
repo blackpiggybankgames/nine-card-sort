@@ -15,7 +15,7 @@ description: >
 1. `docs/temp/change-ui.md` と `docs/SYSTEM_SPEC.md` を読む
 2. 変更計画を提示 → **人間の承認を待つ**
 3. 実装（`game_balance.json` 更新を含む場合あり）
-4. テストファイルが存在すれば実行
+4. `/run-tests` スキルでテストを実行（テストファイルが存在する場合のみ）
 5. ログに記録・削除
    - `docs/ui-log.md` に変更サマリーを追記（`cat >>` のみ）
    - `rm docs/temp/change-ui.md`

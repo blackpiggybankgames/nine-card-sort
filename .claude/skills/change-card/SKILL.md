@@ -15,7 +15,7 @@ description: >
 1. `docs/temp/change-card.md` と `docs/ABILITIES.md` を読む
 2. 変更計画を提示 → **人間の承認を待つ**
 3. 実装（`game_balance.json` 更新を含む）
-4. テストファイルが存在すれば `tests/test_abilities.gd` を更新・実行
+4. `tests/test_deck_abilities.gd` が存在すれば更新し、`/run-tests` スキルで実行
 5. ログに記録・削除
    - `docs/abilities-log.md` に変更サマリーを追記（`cat >>` のみ）
    - `docs/ABILITIES.md` は**触らない**（確定時のみ人間が判断）
