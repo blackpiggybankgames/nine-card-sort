@@ -54,3 +54,13 @@
 **修正**:
 - `Main.gd:_compute_animation_steps` — `d.find(target1)` → `d.find(target2)` に修正。また `new_i == -1` の場合はブロックをロールバックする防御コードを追加
 - `Deck.gd:ability_insert_block` — `new_i == -1` のとき3枚をロールバックしてから `return false` するよう修正
+
+## 2026-04-17: クリア画面の能力発動回数が表示されないバグ修正
+
+**症状**: クリア画面にスキップ回数のみ表示され、各カードの能力発動回数が表示されない。
+
+**原因**: `Main.gd` の `_populate_ability_stats()` 内で `theme_override_font_sizes = {"font_size": 16}` という無効なGodot 4 APIを使用していた。フォントサイズが0になりラベル高さが0となるため非表示になっていた。
+
+**修正**: `add_theme_font_size_override("font_size", 16)` に変更（`DeckDisplay.gd` と同じ正しいAPI）。
+
+**ファイル**: `scripts/Main.gd`

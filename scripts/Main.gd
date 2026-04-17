@@ -130,13 +130,13 @@ func _populate_ability_stats() -> void:
 		var name_label = Label.new()
 		name_label.text = "[" + str(card_num) + "] " + game_manager.get_ability_name(card_num)
 		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		name_label.theme_override_font_sizes = {"font_size": 16}
+		name_label.add_theme_font_size_override("font_size", 16)
 
 		var count_label = Label.new()
 		count_label.text = str(counts.get(card_num, 0)) + " 回"
 		count_label.custom_minimum_size = Vector2(52, 0)
 		count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		count_label.theme_override_font_sizes = {"font_size": 16}
+		count_label.add_theme_font_size_override("font_size", 16)
 
 		row.add_child(name_label)
 		row.add_child(count_label)
