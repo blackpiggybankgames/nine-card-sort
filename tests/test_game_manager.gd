@@ -71,3 +71,47 @@ func test_commit_execution_preserves_card_count() -> void:
 	gm.deck.cards.assign([3, 1, 2, 4, 5, 6, 7, 8, 9])
 	gm.commit_ability_execution(3, -1, -1, 3)
 	assert_eq(gm.deck.cards.size(), 9, "能力発動後も山札は9枚")
+
+# === スキップ回数 ===
+
+func test_skip_count_initializes_to_zero() -> void:
+	assert_eq(gm.skip_count, 0, "start_game後のskip_countは0")
+
+func test_skip_increments_skip_count() -> void:
+	gm.skip_ability()
+	assert_eq(gm.skip_count, 1, "skip_ability()でskip_countが1増える")
+
+func test_multiple_skips_accumulate_count() -> void:
+	gm.skip_ability()
+	gm.skip_ability()
+	gm.skip_ability()
+	assert_eq(gm.skip_count, 3, "3回スキップでskip_countが3")
+
+func test_get_skip_count_returns_value() -> void:
+	gm.skip_ability()
+	gm.skip_ability()
+	assert_eq(gm.get_skip_count(), 2, "get_skip_count()がskip_countの値を返す")
+
+# === 能力使用回数 ===
+
+func test_ability_use_counts_initialize_all_zero() -> void:
+	for i in range(1, 10):
+		assert_eq(gm.ability_use_counts[i], 0, "start_game後カード%dの能力発動回数は0" % i)
+
+func test_commit_increments_ability_use_count() -> void:
+	gm.deck.cards.assign([3, 1, 2, 4, 5, 6, 7, 8, 9])
+	gm.commit_ability_execution(3, -1, -1, 3)
+	assert_eq(gm.ability_use_counts[3], 1, "カード3発動後にability_use_counts[3]が1")
+
+func test_commit_only_increments_used_card() -> void:
+	gm.deck.cards.assign([3, 1, 2, 4, 5, 6, 7, 8, 9])
+	gm.commit_ability_execution(3, -1, -1, 3)
+	for i in range(1, 10):
+		if i == 3:
+			continue
+		assert_eq(gm.ability_use_counts[i], 0, "カード3のみ発動時、カード%dの回数は0のまま" % i)
+
+func test_get_ability_use_counts_has_all_cards() -> void:
+	var counts = gm.get_ability_use_counts()
+	for i in range(1, 10):
+		assert_true(counts.has(i), "get_ability_use_counts()にカード%dのキーが存在する" % i)
