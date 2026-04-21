@@ -29,6 +29,8 @@ extends Node2D
 @onready var clear_turn_label: Label = $UILayer/ClearScreen/TurnCountLabel
 @onready var clear_skip_label: Label = $UILayer/ClearScreen/SkipCountLabel
 @onready var clear_stats_container: VBoxContainer = $UILayer/ClearScreen/StatsContainer
+@onready var share_btn: Button = $UILayer/ClearScreen/ShareButton
+@onready var copy_toast_label: Label = $UILayer/ClearScreen/CopyToastLabel
 
 # ステップラベル（能力発動中の説明表示）
 @onready var step_label: Label = $UILayer/GameUI/StepLabel
@@ -481,6 +483,145 @@ func _play_clear_sort_animation() -> void:
 		current_deck.push_back(top)
 		deck_display.update_display_with_duration(current_deck, 0.5)
 		await deck_display.animation_completed
+
+
+# シェアボタン: スクリーンショット保存 + SNSテキストをクリップボードにコピー
+func _on_share_button_pressed() -> void:
+	share_btn.disabled = true
+	await _save_screenshot()
+	DisplayServer.clipboard_set(_generate_share_text())
+	copy_toast_label.visible = true
+	await get_tree().create_timer(2.0).timeout
+	copy_toast_label.visible = false
+	share_btn.disabled = false
+
+
+# SNS連携テキストを生成（140字以内）
+func _generate_share_text() -> String:
+	var url = Config.get_share_url(debug_mode)
+	var hashtag = Config.get_share_hashtag()
+	var turn_count = game_manager.get_turn_count()
+
+	if game_manager.is_daily_mode:
+		var seed = game_manager.get_daily_seed()
+		var date_str = "%d/%02d/%02d" % [seed / 10000, (seed % 10000) / 100, seed % 100]
+		return "Nine Card Sort デイリーチャレンジ（%s）をクリア！\n%d手でクリア\n%s\n%s" % [date_str, turn_count, hashtag, url]
+	else:
+		return "Nine Card Sort をクリア！\n%d手でクリア\n%s\n%s" % [turn_count, hashtag, url]
+
+
+# リザルトカードを保存（Web: JS Canvas 2Dで生成しダウンロード / ネイティブ: 画面キャプチャ）
+func _save_screenshot() -> void:
+	if OS.has_feature("web"):
+		JavaScriptBridge.eval(_build_result_card_js(_build_result_data_json()))
+	else:
+		# エディタテスト用: 画面キャプチャをファイルに保存
+		await RenderingServer.frame_post_draw
+		var image = get_viewport().get_texture().get_image()
+		if image and not image.is_empty():
+			image.save_png("user://nine-card-sort-result.png")
+
+
+# リザルトデータをJSON文字列で返す
+func _build_result_data_json() -> String:
+	var counts = game_manager.get_ability_use_counts()
+	var ability_counts = {}
+	var ability_names = {}
+	for i in range(1, 10):
+		ability_counts[str(i)] = counts.get(i, 0)
+		ability_names[str(i)] = game_manager.get_ability_name(i)
+	var data = {
+		"is_daily": game_manager.is_daily_mode,
+		"date": "",
+		"turn_count": game_manager.get_turn_count(),
+		"skip_count": game_manager.get_skip_count(),
+		"ability_counts": ability_counts,
+		"ability_names": ability_names,
+		"url": Config.get_share_url(debug_mode),
+		"hashtag": Config.get_share_hashtag()
+	}
+	if game_manager.is_daily_mode:
+		var seed = game_manager.get_daily_seed()
+		data["date"] = "%d/%02d/%02d" % [seed / 10000, (seed % 10000) / 100, seed % 100]
+	return JSON.stringify(data)
+
+
+# JavaScript Canvas 2Dでリザルトカード画像を生成・ダウンロードするJSコードを返す
+# WebGLに依存しないため preserveDrawingBuffer 不要
+func _build_result_card_js(json_data: String) -> String:
+	return """(function(d) {
+	var W = 400, H = 525;
+	var cv = document.createElement('canvas');
+	cv.width = W; cv.height = H;
+	var ctx = cv.getContext('2d');
+
+	ctx.fillStyle = '#182818';
+	ctx.fillRect(0, 0, W, H);
+
+	ctx.strokeStyle = '#4a7a4a';
+	ctx.lineWidth = 2;
+	ctx.strokeRect(10, 10, W-20, H-20);
+
+	ctx.fillStyle = '#ffe84d';
+	ctx.font = 'bold 26px sans-serif';
+	ctx.textAlign = 'center';
+	ctx.fillText('Nine Card Sort', W/2, 52);
+
+	ctx.fillStyle = '#dddddd';
+	ctx.font = '16px sans-serif';
+	var modeText = d.is_daily ? 'デイリーチャレンジ（' + d.date + '）' : 'フリーモード';
+	ctx.fillText(modeText, W/2, 78);
+
+	function divider(y) {
+		ctx.save();
+		ctx.strokeStyle = '#3a5a3a'; ctx.lineWidth = 1;
+		ctx.beginPath(); ctx.moveTo(30, y); ctx.lineTo(W-30, y); ctx.stroke();
+		ctx.restore();
+	}
+	divider(92);
+
+	ctx.fillStyle = '#ffe84d';
+	ctx.font = 'bold 32px sans-serif';
+	ctx.textAlign = 'center';
+	ctx.fillText(d.turn_count + ' 手でクリア', W/2, 133);
+
+	ctx.fillStyle = '#aaaaaa';
+	ctx.font = '15px sans-serif';
+	ctx.fillText('スキップ: ' + d.skip_count + ' 回', W/2, 158);
+
+	divider(172);
+
+	ctx.fillStyle = '#888888';
+	ctx.font = '13px sans-serif';
+	ctx.fillText('能力発動回数', W/2, 193);
+
+	var y = 217;
+	for (var i = 1; i <= 9; i++) {
+		var nm = d.ability_names[String(i)];
+		var cnt = d.ability_counts[String(i)] || 0;
+		ctx.fillStyle = cnt > 0 ? '#ffffff' : '#555555';
+		ctx.font = '14px sans-serif';
+		ctx.textAlign = 'left';
+		ctx.fillText('[' + i + '] ' + nm, 42, y);
+		ctx.textAlign = 'right';
+		ctx.fillText(cnt + ' 回', W-42, y);
+		y += 26;
+	}
+
+	divider(H-46);
+
+	ctx.fillStyle = '#4a7a4a';
+	ctx.font = '11px sans-serif';
+	ctx.textAlign = 'center';
+	ctx.fillText(d.hashtag + '  ' + d.url, W/2, H-24);
+
+	var a = document.createElement('a');
+	a.href = cv.toDataURL('image/png');
+	a.download = 'nine-card-sort-result.png';
+	document.body.appendChild(a);
+	a.click();
+	document.body.removeChild(a);
+})(""" + json_data + """);"""
 
 
 # リトライボタン（前回と同じモードで再開）

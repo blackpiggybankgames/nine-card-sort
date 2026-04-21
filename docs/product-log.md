@@ -27,3 +27,26 @@
 
 ### タイムゾーン設計
 - JST固定（UTC+9）: 日本語ゲームのため日本時間の深夜0時で切替
+
+## 2026-04-21: SNS連携シェア機能
+
+### 変更内容
+- クリア画面に「シェアする」ボタンを追加（「もう一度」の左隣に横並び配置）
+- ボタン押下でスクリーンショット保存 + SNSテキストをクリップボードにコピー
+- コピー完了時にトースト通知（2秒表示）を表示
+
+### SNS連携テキスト仕様
+- フリーモード: `Nine Card Sort をクリア！\n○○手でクリア\n#NineCardSort\n{URL}`
+- デイリーモード: `Nine Card Sort デイリーチャレンジ（YYYY/MM/DD）をクリア！\n○○手でクリア\n#NineCardSort\n{URL}`
+- 140字以内
+
+### URL設定
+- 本番: `https://blackpiggybankgames.github.io/nine-card-sort/`
+- ドラフト（デバッグモード時）: `https://blackpiggybankgames.github.io/nine-card-sort/draft/`
+- `config/game_balance.json` の `share` セクションで管理
+
+### 変更ファイル
+- `config/game_balance.json` — share設定追加
+- `scripts/autoload/Config.gd` — `get_share_url()` / `get_share_hashtag()` 追加
+- `scenes/Main.tscn` — ShareButton / CopyToastLabel 追加、RetryButton位置調整
+- `scripts/Main.gd` — シェア機能3メソッド追加

@@ -15,6 +15,11 @@
     "deck_size": 9,
     "win_condition": [1, 2, 3, 4, 5, 6, 7, 8, 9]
   },
+  "share": {
+    "game_url": "https://blackpiggybankgames.github.io/nine-card-sort/",
+    "game_url_debug": "https://blackpiggybankgames.github.io/nine-card-sort/draft/",
+    "hashtag": "#NineCardSort"
+  },
   "abilities": {
     "1": {"name": "±1入れ替え", "description": "数値が±1のカードと位置を入れ替える"},
     "2": {"name": "3枚順繰り", "description": "隣接する3枚を選び、左端のカードを右端へ移動する"},

@@ -38,3 +38,17 @@ func get_ability_description(card: int) -> String:
     var abilities = balance.get("abilities", {})
     var ability = abilities.get(str(card), {})
     return ability.get("description", "")
+
+
+# シェア用ゲームURLを取得（デバッグ時はdraftURL）
+func get_share_url(is_debug: bool = false) -> String:
+    var share = balance.get("share", {})
+    if is_debug:
+        return share.get("game_url_debug", "")
+    return share.get("game_url", "")
+
+
+# シェア用ハッシュタグを取得
+func get_share_hashtag() -> String:
+    var share = balance.get("share", {})
+    return share.get("hashtag", "#NineCardSort")
