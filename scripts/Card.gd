@@ -27,6 +27,8 @@ var card_colors: Dictionary = {
 var is_selectable: bool = false  # 選択可能かどうか
 var is_highlighted: bool = false  # ハイライト表示中かどうか
 
+var _card_texture: Texture2D = preload("res://assets/images/cards/card_paper_texture.png")
+
 
 func _ready() -> void:
 	# 入力イベントを有効化
@@ -34,14 +36,20 @@ func _ready() -> void:
 
 
 func _draw() -> void:
-	# カードの背景（元の色を保持）
-	var bg_color = card_colors.get(card_number, Color.WHITE)
-	draw_rect(Rect2(-CARD_WIDTH/2, -CARD_HEIGHT/2, CARD_WIDTH, CARD_HEIGHT), bg_color)
+	var card_rect = Rect2(-CARD_WIDTH/2, -CARD_HEIGHT/2, CARD_WIDTH, CARD_HEIGHT)
 
-	# カードの枠線（選択可能時は黄色く太く）
+	# 羊皮紙テクスチャを背景として描画
+	draw_texture_rect(_card_texture, card_rect, false)
+
+	# 数字ごとの識別色を半透明オーバーレイで重ねる
+	var overlay = card_colors.get(card_number, Color.WHITE)
+	overlay.a = 0.35
+	draw_rect(card_rect, overlay)
+
+	# 枠線（選択可能時は黄色く太く）
 	var border_color = Color.BLACK if not is_selectable else Color.YELLOW
 	var border_width = 2.0 if not is_selectable else 4.0
-	draw_rect(Rect2(-CARD_WIDTH/2, -CARD_HEIGHT/2, CARD_WIDTH, CARD_HEIGHT), border_color, false, border_width)
+	draw_rect(card_rect, border_color, false, border_width)
 
 
 # グローバル入力イベントでクリック検出
