@@ -306,6 +306,8 @@ bgImg.src = '/nine-card-sort/assets/images/result/result_card_bg.png';
 |---|--------|------|---------|
 | 1 | 低 | bg_velvet_green.png のタイル境界線が目立つ。シームレス感が不足している。画像の再生成（より境界が目立たないテクスチャ）またはGodot側でのブレンド処理を検討。 | Background (TextureRect) |
 | 2 | 低 | divider_gold.png の区切り線がゲーム全体と調和していない。Add blendで黒は透過されているが、金の線の見た目が浮いている。画像の再生成（より透過に適したデザイン）またはブレンドモード・カラーモジュレート調整を検討。 | ClearScreen (DividerTop / DividerBottom) |
+| 3 | 中 | ボタン画像が光りすぎており、白い文字テキストが読めない。画像を再生成して輝度を抑えるか、`default_theme.tres` の `font_color` を暗い色（例: 濃い茶・黒）に変更して視認性を確保する。 | 全ボタン（Primary / Secondary） |
+| 4 | 低 | ボタン画像の背景（黒部分）が完全に透過されておらず、うっすら見えている。既知の課題 #1 と同根（画像の透過処理が不完全）。画像の再生成またはGodotのModulate/BlendMode調整で対処する。 | 全ボタン（btn_primary / btn_secondary） |
 
 ---
 

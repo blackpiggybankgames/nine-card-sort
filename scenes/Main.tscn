@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://b8iurcg2xupqi"]
+[gd_scene load_steps=16 format=3 uid="uid://b8iurcg2xupqi"]
 
 [ext_resource type="Script" path="res://scripts/Main.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/GameManager.gd" id="2_gm"]
@@ -6,13 +6,12 @@
 [ext_resource type="Texture2D" uid="uid://d3xhw5ormakyw" path="res://assets/images/bg/bg_velvet_green.png" id="4_bg"]
 [ext_resource type="Texture2D" uid="uid://dmcee780i4i0x" path="res://assets/images/panels/panel_hud.png" id="5_hud"]
 [ext_resource type="Texture2D" uid="uid://vswarpc6774v" path="res://assets/images/ui/divider_gold_flat.png" id="6_divider"]
+[ext_resource type="Texture2D" uid="uid://dv46lrqngadub" path="res://assets/images/buttons/btn_secondary_normal.png" id="7_btn_sn"]
+[ext_resource type="Texture2D" uid="uid://c410s8a4vt6ns" path="res://assets/images/buttons/btn_secondary_hover.png" id="8_btn_sh"]
+[ext_resource type="Texture2D" uid="uid://5v8v6vyqtk1x" path="res://assets/images/buttons/btn_secondary_pressed.png" id="9_btn_sp"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button"]
-bg_color = Color(0.2, 0.4, 0.8, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 1
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_hud"]
 texture = ExtResource("5_hud")
@@ -21,15 +20,33 @@ texture_margin_top = 16.0
 texture_margin_right = 16.0
 texture_margin_bottom = 16.0
 
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_secondary_hover"]
+texture = ExtResource("8_btn_sh")
+texture_margin_left = 20.0
+texture_margin_top = 16.0
+texture_margin_right = 20.0
+texture_margin_bottom = 16.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_secondary_pressed"]
+texture = ExtResource("9_btn_sp")
+texture_margin_left = 20.0
+texture_margin_top = 16.0
+texture_margin_right = 20.0
+texture_margin_bottom = 16.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_secondary_normal"]
+texture = ExtResource("7_btn_sn")
+texture_margin_left = 20.0
+texture_margin_top = 16.0
+texture_margin_right = 20.0
+texture_margin_bottom = 16.0
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_step"]
 bg_color = Color(0, 0, 0, 0.78)
 corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
-
-[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
-blend_mode = 1
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_main")
@@ -100,6 +117,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="StartButton" type="Button" parent="UILayer/TitleScreen"]
+material = SubResource("CanvasItemMaterial_add")
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -110,10 +128,10 @@ offset_right = 100.0
 offset_bottom = 370.0
 grow_horizontal = 2
 theme_override_font_sizes/font_size = 24
-theme_override_styles/normal = SubResource("StyleBoxFlat_button")
 text = "フリープレイ"
 
 [node name="DailyChallengeButton" type="Button" parent="UILayer/TitleScreen"]
+material = SubResource("CanvasItemMaterial_add")
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -124,7 +142,6 @@ offset_right = 100.0
 offset_bottom = 435.0
 grow_horizontal = 2
 theme_override_font_sizes/font_size = 24
-theme_override_styles/normal = SubResource("StyleBoxFlat_button")
 text = "デイリーチャレンジ"
 
 [node name="GameUI" type="Control" parent="UILayer"]
@@ -197,6 +214,7 @@ grow_vertical = 0
 alignment = 1
 
 [node name="UseAbilityButton" type="Button" parent="UILayer/GameUI"]
+material = SubResource("CanvasItemMaterial_add")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -210,10 +228,10 @@ offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_font_sizes/font_size = 18
-theme_override_styles/normal = SubResource("StyleBoxFlat_button")
 text = "能力を使う"
 
 [node name="SkipButton" type="Button" parent="UILayer/GameUI"]
+material = SubResource("CanvasItemMaterial_add")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -227,10 +245,14 @@ offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_font_sizes/font_size = 18
+theme_override_styles/hover = SubResource("StyleBoxTexture_secondary_hover")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_secondary_pressed")
+theme_override_styles/normal = SubResource("StyleBoxTexture_secondary_normal")
 text = "スキップ"
 
 [node name="CancelButton" type="Button" parent="UILayer/GameUI"]
 visible = false
+material = SubResource("CanvasItemMaterial_add")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -244,6 +266,9 @@ offset_bottom = -80.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_font_sizes/font_size = 16
+theme_override_styles/hover = SubResource("StyleBoxTexture_secondary_hover")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_secondary_pressed")
+theme_override_styles/normal = SubResource("StyleBoxTexture_secondary_normal")
 text = "キャンセル"
 
 [node name="InstructionLabel" type="Label" parent="UILayer/GameUI"]
@@ -322,6 +347,9 @@ offset_bottom = 55.0
 grow_horizontal = 2
 theme_override_colors/font_color = Color(1, 0.3, 0.3, 1)
 theme_override_font_sizes/font_size = 14
+theme_override_styles/hover = SubResource("StyleBoxFlat_step")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_step")
+theme_override_styles/normal = SubResource("StyleBoxFlat_step")
 text = "即クリア"
 
 [node name="ClearScreen" type="Control" parent="UILayer"]
@@ -448,6 +476,7 @@ text = "リザルトカードを保存・コピーしました！"
 horizontal_alignment = 1
 
 [node name="ShareButton" type="Button" parent="UILayer/ClearScreen"]
+material = SubResource("CanvasItemMaterial_add")
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -458,10 +487,10 @@ offset_right = -5.0
 offset_bottom = 545.0
 grow_horizontal = 2
 theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxFlat_button")
 text = "シェアする"
 
 [node name="RetryButton" type="Button" parent="UILayer/ClearScreen"]
+material = SubResource("CanvasItemMaterial_add")
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -472,10 +501,10 @@ offset_right = 170.0
 offset_bottom = 545.0
 grow_horizontal = 2
 theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxFlat_button")
 text = "もう一度"
 
 [node name="TitleButton" type="Button" parent="UILayer/ClearScreen"]
+material = SubResource("CanvasItemMaterial_add")
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -486,6 +515,9 @@ offset_right = 80.0
 offset_bottom = 590.0
 grow_horizontal = 2
 theme_override_font_sizes/font_size = 16
+theme_override_styles/hover = SubResource("StyleBoxTexture_secondary_hover")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_secondary_pressed")
+theme_override_styles/normal = SubResource("StyleBoxTexture_secondary_normal")
 text = "タイトルへ"
 
 [connection signal="pressed" from="UILayer/TitleScreen/StartButton" to="." method="_on_start_button_pressed"]

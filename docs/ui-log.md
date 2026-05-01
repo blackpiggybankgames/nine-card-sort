@@ -126,3 +126,28 @@
 
 **矢印の位置:**
 カードファンの上方（y=−100）にカード間隔の中点で配置。下向き三角形（▼）。
+
+---
+
+## 2026-05-01 — ビジュアルリニューアル Day2：ボタンアセット適用
+
+**変更ファイル:**
+- `assets/default_theme.tres`: primary ボタン用 StyleBoxTexture（normal/hover/pressed/focus）+ Button フォントカラー 4種を登録
+- `scenes/Main.tscn`: secondary ボタン用 StyleBoxTexture 追加、全ボタンに `CanvasItemMaterial` Add ブレンド適用
+
+**適用ボタン一覧:**
+
+| ボタン | スタイル | ファイル |
+|--------|---------|---------|
+| StartButton | primary（theme継承） | btn_primary_*.png |
+| DailyChallengeButton | primary（theme継承） | btn_primary_*.png |
+| UseAbilityButton | primary（theme継承） | btn_primary_*.png |
+| ShareButton | primary（theme継承） | btn_primary_*.png |
+| RetryButton | primary（theme継承） | btn_primary_*.png |
+| SkipButton | secondary（per-node override） | btn_secondary_*.png |
+| CancelButton | secondary（per-node override） | btn_secondary_*.png |
+| TitleButton | secondary（per-node override） | btn_secondary_*.png |
+
+**Add ブレンド:** 全ボタンに `CanvasItemMaterial_add`（blend_mode=1）を適用。ボタン画像の黒背景を加算合成で透過。
+
+**NinePatch マージン:** primary: left/right=24, top/bottom=18 / secondary: left/right=20, top/bottom=16
