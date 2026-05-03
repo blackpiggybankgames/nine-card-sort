@@ -600,7 +600,6 @@ texture = ExtResource("14_rc_line")
 stretch_mode = 5
 
 [node name="MovesPlate" type="TextureRect" parent="ResultCardViewport/ResultCardScene"]
-material = SubResource("CanvasItemMaterial_add")
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -611,6 +610,7 @@ offset_right = 160.0
 offset_bottom = 330.0
 grow_horizontal = 2
 texture = ExtResource("15_rc_plate")
+expand_mode = 1
 stretch_mode = 5
 
 [node name="MovesCountLabel" type="Label" parent="ResultCardViewport/ResultCardScene"]
