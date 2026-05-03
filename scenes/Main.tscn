@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://b8iurcg2xupqi"]
+[gd_scene load_steps=22 format=3 uid="uid://b8iurcg2xupqi"]
 
 [ext_resource type="Script" path="res://scripts/Main.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/GameManager.gd" id="2_gm"]
@@ -9,6 +9,12 @@
 [ext_resource type="Texture2D" uid="uid://dv46lrqngadub" path="res://assets/images/buttons/btn_secondary_normal.png" id="7_btn_sn"]
 [ext_resource type="Texture2D" uid="uid://c410s8a4vt6ns" path="res://assets/images/buttons/btn_secondary_hover.png" id="8_btn_sh"]
 [ext_resource type="Texture2D" uid="uid://5v8v6vyqtk1x" path="res://assets/images/buttons/btn_secondary_pressed.png" id="9_btn_sp"]
+[ext_resource type="Texture2D" uid="uid://y0gs5r45bxs0" path="res://assets/images/title/logo_title.png" id="10_logo"]
+[ext_resource type="Texture2D" uid="uid://2kj687y78f47" path="res://assets/images/ui/clear_ornament_top.png" id="11_orn_top"]
+[ext_resource type="Texture2D" uid="uid://c8wsskooamjpv" path="res://assets/images/ui/clear_ornament_bottom.png" id="12_orn_bot"]
+[ext_resource type="Texture2D" uid="uid://8hlj8e62vmkh" path="res://assets/images/result/result_card_bg.png" id="13_rc_bg"]
+[ext_resource type="Texture2D" uid="uid://cd4whfxrale05" path="res://assets/images/result/result_card_line_premium.png" id="14_rc_line"]
+[ext_resource type="Texture2D" uid="uid://c5f7jc6pg2jly" path="res://assets/images/result/result_card_title_moves.png" id="15_rc_plate"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
 blend_mode = 1
@@ -77,44 +83,21 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="TitleBG" type="ColorRect" parent="UILayer/TitleScreen"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0.1, 0.15, 0.2, 1)
-
-[node name="TitleLabel" type="Label" parent="UILayer/TitleScreen"]
+[node name="LogoFrame" type="TextureRect" parent="UILayer/TitleScreen"]
+material = SubResource("CanvasItemMaterial_add")
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -200.0
-offset_top = 120.0
-offset_right = 200.0
-offset_bottom = 200.0
+offset_left = -390.0
+offset_top = 94.0
+offset_right = 390.0
+offset_bottom = 304.0
 grow_horizontal = 2
-theme_override_font_sizes/font_size = 48
-text = "Nine Card Sort"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="SubtitleLabel" type="Label" parent="UILayer/TitleScreen"]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -200.0
-offset_top = 200.0
-offset_right = 200.0
-offset_bottom = 240.0
-grow_horizontal = 2
-theme_override_font_sizes/font_size = 20
-text = "ナインカードソート"
-horizontal_alignment = 1
-vertical_alignment = 1
+pivot_offset = Vector2(-390, 390)
+texture = ExtResource("10_logo")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="StartButton" type="Button" parent="UILayer/TitleScreen"]
 material = SubResource("CanvasItemMaterial_add")
@@ -372,6 +355,21 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0.1, 0.2, 0.1, 0.75)
 
+[node name="OrnamentTop" type="TextureRect" parent="UILayer/ClearScreen"]
+material = SubResource("CanvasItemMaterial_add")
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -240.0
+offset_top = 15.0
+offset_right = 240.0
+offset_bottom = 95.0
+grow_horizontal = 2
+mouse_filter = 2
+texture = ExtResource("11_orn_top")
+stretch_mode = 5
+
 [node name="ClearLabel" type="Label" parent="UILayer/ClearScreen"]
 layout_mode = 1
 anchors_preset = 5
@@ -519,6 +517,201 @@ theme_override_styles/hover = SubResource("StyleBoxTexture_secondary_hover")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_secondary_pressed")
 theme_override_styles/normal = SubResource("StyleBoxTexture_secondary_normal")
 text = "タイトルへ"
+
+[node name="OrnamentBottom" type="TextureRect" parent="UILayer/ClearScreen"]
+material = SubResource("CanvasItemMaterial_add")
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -240.0
+offset_top = 510.0
+offset_right = 240.0
+offset_bottom = 590.0
+grow_horizontal = 2
+mouse_filter = 2
+texture = ExtResource("12_orn_bot")
+stretch_mode = 5
+
+[node name="ResultCardViewport" type="SubViewport" parent="."]
+size = Vector2i(600, 800)
+render_target_update_mode = 4
+
+[node name="ResultCardScene" type="Control" parent="ResultCardViewport"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CardBG" type="TextureRect" parent="ResultCardViewport/ResultCardScene"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("13_rc_bg")
+
+[node name="TitleText" type="Label" parent="ResultCardViewport/ResultCardScene"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -250.0
+offset_top = 50.0
+offset_right = 250.0
+offset_bottom = 100.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.788, 0.659, 0.298, 1)
+theme_override_font_sizes/font_size = 28
+text = "Nine Card Sort"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ModeLabel" type="Label" parent="ResultCardViewport/ResultCardScene"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -250.0
+offset_top = 105.0
+offset_right = 250.0
+offset_bottom = 135.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.361, 0.239, 0.063, 1)
+theme_override_font_sizes/font_size = 16
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DividerTop" type="TextureRect" parent="ResultCardViewport/ResultCardScene"]
+material = SubResource("CanvasItemMaterial_add")
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -250.0
+offset_top = 140.0
+offset_right = 250.0
+offset_bottom = 164.0
+grow_horizontal = 2
+texture = ExtResource("14_rc_line")
+stretch_mode = 5
+
+[node name="MovesPlate" type="TextureRect" parent="ResultCardViewport/ResultCardScene"]
+material = SubResource("CanvasItemMaterial_add")
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -160.0
+offset_top = 170.0
+offset_right = 160.0
+offset_bottom = 330.0
+grow_horizontal = 2
+texture = ExtResource("15_rc_plate")
+stretch_mode = 5
+
+[node name="MovesCountLabel" type="Label" parent="ResultCardViewport/ResultCardScene"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -160.0
+offset_top = 220.0
+offset_right = 160.0
+offset_bottom = 310.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.361, 0.239, 0.063, 1)
+theme_override_font_sizes/font_size = 38
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SkipLabel" type="Label" parent="ResultCardViewport/ResultCardScene"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -250.0
+offset_top = 340.0
+offset_right = 250.0
+offset_bottom = 368.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.361, 0.239, 0.063, 1)
+theme_override_font_sizes/font_size = 16
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DividerMid" type="TextureRect" parent="ResultCardViewport/ResultCardScene"]
+material = SubResource("CanvasItemMaterial_add")
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -250.0
+offset_top = 374.0
+offset_right = 250.0
+offset_bottom = 398.0
+grow_horizontal = 2
+texture = ExtResource("14_rc_line")
+stretch_mode = 5
+
+[node name="AbilityTitleLabel" type="Label" parent="ResultCardViewport/ResultCardScene"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -250.0
+offset_top = 405.0
+offset_right = 250.0
+offset_bottom = 433.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.4, 0.3, 0.15, 1)
+theme_override_font_sizes/font_size = 14
+text = "能力発動回数"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AbilityContainer" type="VBoxContainer" parent="ResultCardViewport/ResultCardScene"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -250.0
+offset_top = 438.0
+offset_right = 250.0
+offset_bottom = 656.0
+grow_horizontal = 2
+
+[node name="DividerBot" type="TextureRect" parent="ResultCardViewport/ResultCardScene"]
+material = SubResource("CanvasItemMaterial_add")
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -250.0
+offset_top = 660.0
+offset_right = 250.0
+offset_bottom = 684.0
+grow_horizontal = 2
+texture = ExtResource("14_rc_line")
+stretch_mode = 5
+
+[node name="FooterLabel" type="Label" parent="ResultCardViewport/ResultCardScene"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -250.0
+offset_top = 695.0
+offset_right = 250.0
+offset_bottom = 755.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.3, 0.2, 0.1, 1)
+theme_override_font_sizes/font_size = 11
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [connection signal="pressed" from="UILayer/TitleScreen/StartButton" to="." method="_on_start_button_pressed"]
 [connection signal="pressed" from="UILayer/TitleScreen/DailyChallengeButton" to="." method="_on_daily_challenge_button_pressed"]
