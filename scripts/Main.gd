@@ -53,11 +53,16 @@ var _clear_zoom_done: bool = false
 
 func _ready() -> void:
 	# 日本語フォントのテーマを適用
+	# UILayer 配下と SubViewport 内の ResultCardScene の両方に適用する
 	var theme = load("res://assets/default_theme.tres")
 	if theme:
 		for child in ui_layer.get_children():
 			if child is Control:
 				child.theme = theme
+		# ResultCardViewport は UILayer の外にあるためループに入らない
+		var result_scene := rc_viewport.get_child(0)
+		if result_scene is Control:
+			result_scene.theme = theme
 
 	# 画面サイズ変更時に背景を更新
 	get_viewport().size_changed.connect(_update_background_size)
