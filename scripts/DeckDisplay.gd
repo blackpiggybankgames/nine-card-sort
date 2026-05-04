@@ -98,12 +98,14 @@ func _create_card(card_number: int, index: int) -> Card:
 	card.add_child(collision)
 
 	# ラベルを追加（カード番号表示）
+	# 文字色にカードのアースカラーを使用して識別性を高める
 	var label = Label.new()
 	label.text = str(card_number)
 	label.add_theme_font_size_override("font_size", 48)
-	label.add_theme_color_override("font_color", Color.WHITE)
-	label.add_theme_color_override("font_outline_color", Color.BLACK)
-	label.add_theme_constant_override("outline_size", 4)
+	var text_color = card.card_colors.get(card_number, Color(0.29, 0.24, 0.16))
+	label.add_theme_color_override("font_color", text_color)
+	label.add_theme_color_override("font_outline_color", Color(0.96, 0.90, 0.78, 0.8))
+	label.add_theme_constant_override("outline_size", 5)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.size = Vector2(Card.CARD_WIDTH, Card.CARD_HEIGHT)
