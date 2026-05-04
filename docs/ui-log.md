@@ -151,3 +151,15 @@
 **Add ブレンド:** 全ボタンに `CanvasItemMaterial_add`（blend_mode=1）を適用。ボタン画像の黒背景を加算合成で透過。
 
 **NinePatch マージン:** primary: left/right=24, top/bottom=18 / secondary: left/right=20, top/bottom=16
+
+## 2026-05-04 — クリア画面の再構成（result_board.png ベース）
+
+**変更ファイル:** `scenes/Main.tscn`, `scripts/Main.gd`
+
+**内容:**
+- クリア画面を result_board.png（800×1192、真鍮フレーム＋羊皮紙）中心のレイアウトに再構成
+- result_board.png（幅330px / α=0.85）を中央配置。背後のゲームカードが透けて見える
+- ボードヘッダーの数字ボックス上に最終手数を BoardMovesLabel で動的表示
+- 羊皮紙エリア内の StatsContainer にスキップ回数＋能力9行をセピア色（#593814）14ptで表示
+- ボタン3つ（シェア・もう一度・タイトルへ）を横並びに配置、すべて真鍮スタイル（primary）に統一
+- 削除: OrnamentTop/Bottom, ClearLabel, TurnCountLabel, SkipCountLabel, DividerTop/Bottom

@@ -26,8 +26,7 @@ extends Node2D
 @onready var debug_container: Control = $UILayer/GameUI/DebugContainer
 
 # クリア画面
-@onready var clear_turn_label: Label = $UILayer/ClearScreen/TurnCountLabel
-@onready var clear_skip_label: Label = $UILayer/ClearScreen/SkipCountLabel
+@onready var board_moves_label: Label = $UILayer/ClearScreen/BoardMovesLabel
 @onready var clear_stats_container: VBoxContainer = $UILayer/ClearScreen/StatsContainer
 @onready var share_btn: Button = $UILayer/ClearScreen/ShareButton
 @onready var copy_toast_label: Label = $UILayer/ClearScreen/CopyToastLabel
@@ -125,37 +124,55 @@ func _show_clear_screen(turn_count: int) -> void:
 	deck_display.visible = true  # カードを表示してクリア状態を確認できるようにする
 	deck_display.set_all_selectable(false)  # カードのクリックは無効化
 	deck_display.clear_highlights()
-	clear_turn_label.text = str(turn_count) + " 手でクリア！"
-	clear_skip_label.text = "スキップ: " + str(game_manager.get_skip_count()) + " 回"
+	board_moves_label.text = str(turn_count)
 	_populate_ability_stats()
 
 
-# 能力発動回数リストをクリア画面に動的生成
+# 能力発動回数リストをクリア画面に動的生成（セピア色・クラシックフォント）
 func _populate_ability_stats() -> void:
-	# 既存の行をクリア
 	for child in clear_stats_container.get_children():
 		child.queue_free()
 
-	var counts = game_manager.get_ability_use_counts()
+	var sepia := Color(0.35, 0.22, 0.08, 1)
 
+	# スキップ回数を先頭行として追加
+	var skip_row := _make_stat_row("スキップ", str(game_manager.get_skip_count()) + " 回", sepia)
+	clear_stats_container.add_child(skip_row)
+
+	# 区切り線
+	var sep := HSeparator.new()
+	sep.add_theme_color_override("color", Color(0.4, 0.25, 0.1, 0.5))
+	sep.custom_minimum_size = Vector2(0, 6)
+	clear_stats_container.add_child(sep)
+
+	var counts := game_manager.get_ability_use_counts()
 	for card_num in range(1, 10):
-		var row = HBoxContainer.new()
-		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-
-		var name_label = Label.new()
-		name_label.text = "[" + str(card_num) + "] " + game_manager.get_ability_name(card_num)
-		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		name_label.add_theme_font_size_override("font_size", 16)
-
-		var count_label = Label.new()
-		count_label.text = str(counts.get(card_num, 0)) + " 回"
-		count_label.custom_minimum_size = Vector2(52, 0)
-		count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		count_label.add_theme_font_size_override("font_size", 16)
-
-		row.add_child(name_label)
-		row.add_child(count_label)
+		var label_text := "[" + str(card_num) + "] " + game_manager.get_ability_name(card_num)
+		var count_text := str(counts.get(card_num, 0)) + " 回"
+		var row := _make_stat_row(label_text, count_text, sepia)
 		clear_stats_container.add_child(row)
+
+
+func _make_stat_row(name_text: String, count_text: String, color: Color) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	var name_label := Label.new()
+	name_label.text = name_text
+	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	name_label.add_theme_font_size_override("font_size", 14)
+	name_label.add_theme_color_override("font_color", color)
+
+	var count_label := Label.new()
+	count_label.text = count_text
+	count_label.custom_minimum_size = Vector2(52, 0)
+	count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	count_label.add_theme_font_size_override("font_size", 14)
+	count_label.add_theme_color_override("font_color", color)
+
+	row.add_child(name_label)
+	row.add_child(count_label)
+	return row
 
 
 # フリープレイ開始ボタン
