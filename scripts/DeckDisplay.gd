@@ -102,9 +102,11 @@ func _create_card(card_number: int, index: int) -> Card:
 	var label = Label.new()
 	label.text = str(card_number)
 	label.add_theme_font_size_override("font_size", 48)
-	var text_color = card.card_colors.get(card_number, Color(0.29, 0.24, 0.16))
+	# アースカラーをウォームブラウンへ40%ブレンドして彩度を落とし羊皮紙に馴染む色調に
+	var raw_color = card.card_colors.get(card_number, Color(0.29, 0.24, 0.16))
+	var text_color = raw_color.lerp(Color(0.38, 0.30, 0.22), 0.40)
 	label.add_theme_color_override("font_color", text_color)
-	label.add_theme_color_override("font_outline_color", Color(0.96, 0.90, 0.78, 0.8))
+	label.add_theme_color_override("font_outline_color", Color(0.96, 0.90, 0.78, 0.85))
 	label.add_theme_constant_override("outline_size", 5)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER

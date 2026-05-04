@@ -133,7 +133,7 @@ func _populate_ability_stats() -> void:
 	for child in clear_stats_container.get_children():
 		child.queue_free()
 
-	var sepia := Color(0.35, 0.22, 0.08, 1)
+	var sepia := Color(0.290, 0.235, 0.157, 1)  # ダークブラウン #4a3c28
 
 	# スキップ回数を先頭行として追加
 	var skip_row := _make_stat_row("スキップ", str(game_manager.get_skip_count()) + " 回", sepia)
