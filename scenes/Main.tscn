@@ -17,12 +17,15 @@
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
 blend_mode = 1
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_hud"]
-texture = ExtResource("5_hud")
-texture_margin_left = 16.0
-texture_margin_top = 16.0
-texture_margin_right = 16.0
-texture_margin_bottom = 16.0
+[sub_resource type="StyleBoxFlat" id="StyleBoxTexture_hud"]
+bg_color = Color(0.20, 0.14, 0.08, 0.93)
+border_width_top = 2
+border_width_bottom = 2
+border_color = Color(0.72, 0.55, 0.22, 1)
+corner_radius_top_left = 0
+corner_radius_top_right = 0
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_secondary_hover"]
 texture = ExtResource("8_btn_sh")
@@ -147,6 +150,7 @@ offset_left = 20.0
 offset_top = 10.0
 offset_right = 150.0
 offset_bottom = 40.0
+theme_override_colors/font_color = Color(0.95, 0.88, 0.72, 1)
 theme_override_font_sizes/font_size = 20
 text = "手数: 0"
 
@@ -160,6 +164,7 @@ offset_top = 10.0
 offset_right = 200.0
 offset_bottom = 40.0
 grow_horizontal = 2
+theme_override_colors/font_color = Color(0.95, 0.88, 0.72, 1)
 theme_override_font_sizes/font_size = 24
 text = "[1] 引き上げ"
 horizontal_alignment = 1
@@ -174,6 +179,7 @@ offset_top = 45.0
 offset_right = 300.0
 offset_bottom = 75.0
 grow_horizontal = 2
+theme_override_colors/font_color = Color(0.85, 0.76, 0.58, 1)
 theme_override_font_sizes/font_size = 16
 text = "任意の1枚を一番上へ移動する"
 horizontal_alignment = 1
@@ -262,7 +268,7 @@ offset_top = 90.0
 offset_right = 200.0
 offset_bottom = 120.0
 grow_horizontal = 2
-theme_override_colors/font_color = Color(1, 1, 0.5, 1)
+theme_override_colors/font_color = Color(0.88, 0.72, 0.28, 1)
 theme_override_font_sizes/font_size = 18
 text = "カードを選んでください"
 horizontal_alignment = 1
@@ -291,7 +297,7 @@ offset_top = 251.0
 offset_right = 216.0
 offset_bottom = 287.0
 grow_horizontal = 2
-theme_override_colors/font_color = Color(1, 1, 0.65, 1)
+theme_override_colors/font_color = Color(0.88, 0.72, 0.28, 1)
 theme_override_font_sizes/font_size = 20
 horizontal_alignment = 1
 vertical_alignment = 1

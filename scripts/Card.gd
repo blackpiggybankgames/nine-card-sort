@@ -11,17 +11,17 @@ signal card_clicked(card_number: int)
 const CARD_WIDTH: float = 100.0
 const CARD_HEIGHT: float = 150.0
 
-# カードの色（数字ごとに異なる色）
+# カードの色（アンティーク・カジノスタイルのアースカラー）
 var card_colors: Dictionary = {
-	1: Color(0.9, 0.3, 0.3),   # 赤
-	2: Color(0.9, 0.6, 0.2),   # オレンジ
-	3: Color(0.9, 0.9, 0.2),   # 黄色
-	4: Color(0.4, 0.8, 0.3),   # 緑
-	5: Color(0.3, 0.7, 0.9),   # 水色
-	6: Color(0.3, 0.4, 0.9),   # 青
-	7: Color(0.6, 0.3, 0.9),   # 紫
-	8: Color(0.9, 0.4, 0.7),   # ピンク
-	9: Color(0.5, 0.5, 0.5),   # グレー
+	1: Color(0.55, 0.12, 0.12),  # バーガンディ
+	2: Color(0.62, 0.38, 0.08),  # アンバー
+	3: Color(0.50, 0.45, 0.08),  # マスタード
+	4: Color(0.15, 0.35, 0.18),  # ハンターグリーン
+	5: Color(0.15, 0.35, 0.38),  # ティール
+	6: Color(0.16, 0.20, 0.45),  # ネイビー
+	7: Color(0.35, 0.15, 0.42),  # プラム
+	8: Color(0.48, 0.22, 0.30),  # モーブ
+	9: Color(0.32, 0.28, 0.24),  # ピューター
 }
 
 var is_selectable: bool = false  # 選択可能かどうか
@@ -41,13 +41,13 @@ func _draw() -> void:
 	# 羊皮紙テクスチャを背景として描画
 	draw_texture_rect(_card_texture, card_rect, false)
 
-	# 数字ごとの識別色を半透明オーバーレイで重ねる
+	# アースカラーを薄く重ねて羊皮紙ベースを活かす
 	var overlay = card_colors.get(card_number, Color.WHITE)
-	overlay.a = 0.35
+	overlay.a = 0.25
 	draw_rect(card_rect, overlay)
 
-	# 枠線（選択可能時は黄色く太く）
-	var border_color = Color.BLACK if not is_selectable else Color.YELLOW
+	# 枠線（通常: ダークブラウン、選択可能: アンティークゴールド）
+	var border_color = Color(0.29, 0.24, 0.16) if not is_selectable else Color(0.80, 0.65, 0.20)
 	var border_width = 2.0 if not is_selectable else 4.0
 	draw_rect(card_rect, border_color, false, border_width)
 

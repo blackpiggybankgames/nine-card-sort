@@ -163,3 +163,13 @@
 - 羊皮紙エリア内の StatsContainer にスキップ回数＋能力9行をセピア色（#593814）14ptで表示
 - ボタン3つ（シェア・もう一度・タイトルへ）を横並びに配置、すべて真鍮スタイル（primary）に統一
 - 削除: OrnamentTop/Bottom, ClearLabel, TurnCountLabel, SkipCountLabel, DividerTop/Bottom
+
+## 2026-05-04 — アンティーク・カジノスタイルへの統一
+
+**変更ファイル:** `scripts/Card.gd`, `assets/default_theme.tres`, `scenes/Main.tscn`, `assets/fonts/`
+
+**内容:**
+- カード識別色をパステル→アースカラー（バーガンディ・アンバー・マスタード等）に変更。透過度 0.35→0.25、枠線をダークブラウン/アンティークゴールドに変更
+- フォントを NotoSansJP（ゴシック）→ NotoSerifJP（明朝体・可変フォント）に変更
+- HUDヘッダーを panel_hud.png → StyleBoxFlat（ダークブラウン #33241a + ゴールドボーダー）に変更
+- HUDラベルにアンティーククリーム色 (#f2e0b7)、InstructionLabel・StepLabel にアンティークゴールドを適用

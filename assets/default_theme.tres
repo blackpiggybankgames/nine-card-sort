@@ -1,6 +1,6 @@
 [gd_resource type="Theme" load_steps=8 format=3 uid="uid://theme_default"]
 
-[ext_resource type="FontFile" uid="uid://cjp8x7y2mq5ne" path="res://assets/fonts/NotoSansJP-Regular.otf" id="1_font"]
+[ext_resource type="FontFile" uid="uid://serif_jp_var" path="res://assets/fonts/NotoSerifJP-VariableFont_wght.ttf" id="1_font"]
 [ext_resource type="Texture2D" path="res://assets/images/buttons/btn_primary_normal.png" id="2_btn_pn"]
 [ext_resource type="Texture2D" path="res://assets/images/buttons/btn_primary_hover.png" id="3_btn_ph"]
 [ext_resource type="Texture2D" path="res://assets/images/buttons/btn_primary_pressed.png" id="4_btn_pp"]
