@@ -46,10 +46,14 @@ func _draw() -> void:
 	overlay.a = 0.25
 	draw_rect(card_rect, overlay)
 
-	# 枠線（通常: ダークブラウン、選択可能: アンティークゴールド）
-	var border_color = Color(0.29, 0.24, 0.16) if not is_selectable else Color(0.80, 0.65, 0.20)
-	var border_width = 2.0 if not is_selectable else 4.0
-	draw_rect(card_rect, border_color, false, border_width)
+	# 枠線（選択可能: ホワイトゴールドグロー3層、通常: ダークブラウン）
+	if is_selectable:
+		var g := Color(1.0, 0.96, 0.70)
+		draw_rect(card_rect.grow(6), Color(g.r, g.g, g.b, 0.10), false, 6.0)
+		draw_rect(card_rect.grow(3), Color(g.r, g.g, g.b, 0.28), false, 3.5)
+		draw_rect(card_rect.grow(1), Color(g.r, g.g, g.b, 0.88), false, 2.5)
+	else:
+		draw_rect(card_rect, Color(0.29, 0.24, 0.16), false, 2.0)
 
 
 # グローバル入力イベントでクリック検出
@@ -91,6 +95,14 @@ func set_card_number(number: int) -> void:
 func set_selectable(selectable: bool) -> void:
 	is_selectable = selectable
 	queue_redraw()
+	# 選択可能時に1.05倍へ拡大して浮き上がりを演出
+	var tween := create_tween()
+	if selectable:
+		tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+		tween.tween_property(self, "scale", Vector2(1.05, 1.05), 0.15)
+	else:
+		tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
+		tween.tween_property(self, "scale", Vector2(1.0, 1.0), 0.12)
 
 
 # ハイライト状態を設定
