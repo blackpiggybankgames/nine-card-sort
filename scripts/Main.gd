@@ -37,7 +37,6 @@ extends Node2D
 @onready var rc_mode_label: Label = $ResultCardViewport/ResultCardScene/ModeLabel
 @onready var rc_moves_label: Label = $ResultCardViewport/ResultCardScene/MovesCountLabel
 @onready var rc_ability_container: VBoxContainer = $ResultCardViewport/ResultCardScene/AbilityContainer
-@onready var rc_footer_label: Label = $ResultCardViewport/ResultCardScene/FooterLabel
 
 # ステップラベル（能力発動中の説明表示）
 @onready var step_label: Label = $UILayer/GameUI/StepLabel
@@ -565,7 +564,6 @@ func _update_result_card() -> void:
 		rc_mode_label.text = "フリーモード"
 
 	rc_moves_label.text = str(turn_count)
-	rc_footer_label.text = "%s  %s" % [Config.get_share_hashtag(), Config.get_share_url(debug_mode)]
 
 	# クリア画面と同じ構成で再構築
 	for child in rc_ability_container.get_children():

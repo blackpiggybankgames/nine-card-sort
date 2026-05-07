@@ -466,7 +466,7 @@ theme_override_font_sizes/font_size = 18
 text = "タイトルへ"
 
 [node name="ResultCardViewport" type="SubViewport" parent="."]
-size = Vector2i(600, 800)
+size = Vector2i(340, 520)
 render_target_update_mode = 4
 
 [node name="ResultCardScene" type="Control" parent="ResultCardViewport"]
@@ -482,9 +482,10 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -239.0
-offset_right = 238.0
-offset_bottom = 800.0
+offset_left = -169.5
+offset_top = 7.0
+offset_right = 169.5
+offset_bottom = 513.0
 grow_horizontal = 2
 texture = ExtResource("16_rb")
 expand_mode = 1
@@ -494,10 +495,10 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -173.0
-offset_top = 168.0
-offset_right = 173.0
-offset_bottom = 184.0
+offset_left = -123.0
+offset_top = 111.0
+offset_right = 123.0
+offset_bottom = 127.0
 grow_horizontal = 2
 theme_override_colors/font_color = Color(0.29, 0.235, 0.157, 1)
 theme_override_font_sizes/font_size = 14
@@ -509,10 +510,10 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -10.0
-offset_top = 35.0
-offset_right = 68.0
-offset_bottom = 92.0
+offset_left = -7.0
+offset_top = 29.0
+offset_right = 48.0
+offset_bottom = 65.0
 grow_horizontal = 2
 theme_override_colors/font_color = Color(0.361, 0.239, 0.063, 1)
 theme_override_font_sizes/font_size = 26
@@ -524,26 +525,11 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -173.0
-offset_top = 188.0
-offset_right = 173.0
-offset_bottom = 470.0
+offset_left = -123.0
+offset_top = 130.5
+offset_right = 123.0
+offset_bottom = 491.5
 grow_horizontal = 2
-
-[node name="FooterLabel" type="Label" parent="ResultCardViewport/ResultCardScene"]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -173.0
-offset_top = 630.0
-offset_right = 173.0
-offset_bottom = 660.0
-grow_horizontal = 2
-theme_override_colors/font_color = Color(0.3, 0.2, 0.1, 1)
-theme_override_font_sizes/font_size = 11
-horizontal_alignment = 1
-vertical_alignment = 1
 
 [connection signal="pressed" from="UILayer/TitleScreen/StartButton" to="." method="_on_start_button_pressed"]
 [connection signal="pressed" from="UILayer/TitleScreen/DailyChallengeButton" to="." method="_on_daily_challenge_button_pressed"]
