@@ -497,9 +497,9 @@ anchor_right = 0.5
 offset_left = -173.0
 offset_top = 168.0
 offset_right = 173.0
-offset_bottom = 192.0
+offset_bottom = 184.0
 grow_horizontal = 2
-theme_override_colors/font_color = Color(0.361, 0.239, 0.063, 1)
+theme_override_colors/font_color = Color(0.29, 0.235, 0.157, 1)
 theme_override_font_sizes/font_size = 14
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -519,46 +519,15 @@ theme_override_font_sizes/font_size = 26
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="SkipLabel" type="Label" parent="ResultCardViewport/ResultCardScene"]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -173.0
-offset_top = 196.0
-offset_right = 173.0
-offset_bottom = 220.0
-grow_horizontal = 2
-theme_override_colors/font_color = Color(0.361, 0.239, 0.063, 1)
-theme_override_font_sizes/font_size = 14
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="AbilityTitleLabel" type="Label" parent="ResultCardViewport/ResultCardScene"]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -173.0
-offset_top = 250.0
-offset_right = 173.0
-offset_bottom = 270.0
-grow_horizontal = 2
-theme_override_colors/font_color = Color(0.4, 0.3, 0.15, 1)
-theme_override_font_sizes/font_size = 14
-text = "能力発動回数"
-horizontal_alignment = 1
-vertical_alignment = 1
-
 [node name="AbilityContainer" type="VBoxContainer" parent="ResultCardViewport/ResultCardScene"]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -173.0
-offset_top = 274.0
+offset_top = 188.0
 offset_right = 173.0
-offset_bottom = 530.0
+offset_bottom = 470.0
 grow_horizontal = 2
 
 [node name="FooterLabel" type="Label" parent="ResultCardViewport/ResultCardScene"]

@@ -36,7 +36,6 @@ extends Node2D
 @onready var rc_viewport: SubViewport = $ResultCardViewport
 @onready var rc_mode_label: Label = $ResultCardViewport/ResultCardScene/ModeLabel
 @onready var rc_moves_label: Label = $ResultCardViewport/ResultCardScene/MovesCountLabel
-@onready var rc_skip_label: Label = $ResultCardViewport/ResultCardScene/SkipLabel
 @onready var rc_ability_container: VBoxContainer = $ResultCardViewport/ResultCardScene/AbilityContainer
 @onready var rc_footer_label: Label = $ResultCardViewport/ResultCardScene/FooterLabel
 
@@ -566,23 +565,33 @@ func _update_result_card() -> void:
 		rc_mode_label.text = "フリーモード"
 
 	rc_moves_label.text = str(turn_count)
-	rc_skip_label.text = "スキップ: %d 回" % skip_count
 	rc_footer_label.text = "%s  %s" % [Config.get_share_hashtag(), Config.get_share_url(debug_mode)]
 
-	# 能力リストを再構築（前回分を削除してから追加）
+	# クリア画面と同じ構成で再構築
 	for child in rc_ability_container.get_children():
 		child.queue_free()
+
+	var sepia := Color(0.290, 0.235, 0.157, 1)
+
+	var sep_top := HSeparator.new()
+	sep_top.add_theme_color_override("color", Color(0.4, 0.25, 0.1, 0.5))
+	sep_top.custom_minimum_size = Vector2(0, 6)
+	rc_ability_container.add_child(sep_top)
+
+	var skip_row := _make_stat_row("スキップ", str(skip_count) + " 回", sepia)
+	rc_ability_container.add_child(skip_row)
+
+	var sep := HSeparator.new()
+	sep.add_theme_color_override("color", Color(0.4, 0.25, 0.1, 0.5))
+	sep.custom_minimum_size = Vector2(0, 6)
+	rc_ability_container.add_child(sep)
+
 	var counts = game_manager.get_ability_use_counts()
 	for i in range(1, 10):
 		var ability_name = game_manager.get_ability_name(i)
 		var count = counts.get(i, 0)
-		var label := Label.new()
-		label.text = "[%d] %s  %d回" % [i, ability_name, count]
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.add_theme_font_size_override("font_size", 14)
-		var text_color := Color(0.2, 0.1, 0.05, 1) if count > 0 else Color(0.5, 0.4, 0.3, 0.5)
-		label.add_theme_color_override("font_color", text_color)
-		rc_ability_container.add_child(label)
+		var row := _make_stat_row("[%d] %s" % [i, ability_name], str(count) + " 回", sepia)
+		rc_ability_container.add_child(row)
 
 
 # リザルトカードを SubViewport でレンダリングしてダウンロード
