@@ -865,11 +865,10 @@ func _setup_responsive_layout() -> void:
 
 # portrait 時のレイアウト適用
 func _apply_portrait_layout() -> void:
-	# UILayer CanvasLayer は CSS ピクセル空間で描画される
-	# DPR(devicePixelRatio) > 1 の環境（iPhone等）では get_viewport().size が物理ピクセルを返すため
-	# screen_get_scale() で割って CSS ピクセル高さに変換する
-	var dpr: float = maxf(DisplayServer.screen_get_scale(), 1.0)
-	var vp_h: float = float(get_viewport().size.y) / dpr
+	# UILayer CanvasLayer は論理仮想座標空間（幅800基準）で描画される
+	# portrait 時は幅が制約になるため、論理高さ = device_h × base_w / device_w
+	# DPR は分子・分母に同じく掛かるため自然に相殺される
+	var vp_h: float = float(get_viewport().size.y) * 800.0 / float(get_viewport().size.x)
 	var center_y: float = vp_h / 2.0
 
 	# タイトルボタン: 幅560px・高さ160px、ペアを中央に配置（gap 20px）
