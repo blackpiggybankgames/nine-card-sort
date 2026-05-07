@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://b8iurcg2xupqi"]
+[gd_scene load_steps=16 format=3 uid="uid://b8iurcg2xupqi"]
 
 [ext_resource type="Script" path="res://scripts/Main.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/GameManager.gd" id="2_gm"]
@@ -8,9 +8,6 @@
 [ext_resource type="Texture2D" uid="uid://c410s8a4vt6ns" path="res://assets/images/buttons/btn_secondary_hover.png" id="8_btn_sh"]
 [ext_resource type="Texture2D" uid="uid://5v8v6vyqtk1x" path="res://assets/images/buttons/btn_secondary_pressed.png" id="9_btn_sp"]
 [ext_resource type="Texture2D" uid="uid://y0gs5r45bxs0" path="res://assets/images/title/logo_title.png" id="10_logo"]
-[ext_resource type="Texture2D" uid="uid://8hlj8e62vmkh" path="res://assets/images/result/result_card_bg.png" id="13_rc_bg"]
-[ext_resource type="Texture2D" uid="uid://cd4whfxrale05" path="res://assets/images/result/result_card_line_premium.png" id="14_rc_line"]
-[ext_resource type="Texture2D" uid="uid://c5f7jc6pg2jly" path="res://assets/images/result/result_card_title_moves.png" id="15_rc_plate"]
 [ext_resource type="Texture2D" uid="uid://foqdn5oa5erw" path="res://assets/images/result/result_board.png" id="16_rb"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
@@ -387,11 +384,11 @@ anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -123.0
-offset_top = 94.0
+offset_top = 111.0
 offset_right = 123.0
-offset_bottom = 110.0
+offset_bottom = 127.0
 grow_horizontal = 2
-theme_override_colors/font_color = Color(0.290, 0.235, 0.157, 1)
+theme_override_colors/font_color = Color(0.29, 0.235, 0.157, 1)
 theme_override_font_sizes/font_size = 14
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -486,13 +483,11 @@ anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -239.0
-offset_top = 0.0
 offset_right = 238.0
 offset_bottom = 800.0
 grow_horizontal = 2
 texture = ExtResource("16_rb")
 expand_mode = 1
-stretch_mode = 0
 
 [node name="ModeLabel" type="Label" parent="ResultCardViewport/ResultCardScene"]
 layout_mode = 1
