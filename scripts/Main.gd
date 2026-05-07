@@ -865,23 +865,40 @@ func _setup_responsive_layout() -> void:
 
 # portrait 時のレイアウト適用
 func _apply_portrait_layout() -> void:
-	var center_y = get_viewport().size.y / 2.0
+	var vp_h = get_viewport().size.y
+	var center_y = vp_h / 2.0
 
-	# タイトルボタン: 幅280px・高さ90px、ペアを中央に配置（gap 20px）
-	var btn_top = center_y - 100.0
-	start_button.offset_left = -140.0
-	start_button.offset_right = 140.0
+	# タイトルボタン: 幅560px・高さ160px、ペアを中央に配置（gap 20px）
+	var btn_top = center_y - 170.0
+	start_button.offset_left = -280.0
+	start_button.offset_right = 280.0
 	start_button.offset_top = btn_top
-	start_button.offset_bottom = btn_top + 90.0
-	daily_button.offset_left = -140.0
-	daily_button.offset_right = 140.0
-	daily_button.offset_top = btn_top + 110.0
-	daily_button.offset_bottom = btn_top + 200.0
+	start_button.offset_bottom = btn_top + 160.0
+	start_button.add_theme_font_size_override("font_size", 36)
+	daily_button.offset_left = -280.0
+	daily_button.offset_right = 280.0
+	daily_button.offset_top = btn_top + 180.0
+	daily_button.offset_bottom = btn_top + 340.0
+	daily_button.add_theme_font_size_override("font_size", 36)
 
-	# クリア画面ボタン: 高さを90pxに拡大（横並び配置は維持）
-	share_btn.offset_bottom = 608.0
-	retry_btn.offset_bottom = 608.0
-	title_btn.offset_bottom = 608.0
+	# クリア画面ボタン: 縦1列・幅560px・高さ160px、画面下部に配置（gap 20px）
+	# カード表示(y≈700〜900)と重ならないよう画面下部から配置
+	var cb_top = vp_h - 540.0  # 3×160 + 2×20 = 520px、下マージン20px
+	share_btn.offset_left = -280.0
+	share_btn.offset_right = 280.0
+	share_btn.offset_top = cb_top
+	share_btn.offset_bottom = cb_top + 160.0
+	share_btn.add_theme_font_size_override("font_size", 32)
+	retry_btn.offset_left = -280.0
+	retry_btn.offset_right = 280.0
+	retry_btn.offset_top = cb_top + 180.0
+	retry_btn.offset_bottom = cb_top + 340.0
+	retry_btn.add_theme_font_size_override("font_size", 32)
+	title_btn.offset_left = -280.0
+	title_btn.offset_right = 280.0
+	title_btn.offset_top = cb_top + 360.0
+	title_btn.offset_bottom = cb_top + 520.0
+	title_btn.add_theme_font_size_override("font_size", 32)
 
 
 # landscape 時のレイアウト適用（PC・横向き: 元の値に戻す）
@@ -891,15 +908,29 @@ func _apply_landscape_layout() -> void:
 	start_button.offset_right = 100.0
 	start_button.offset_top = 320.0
 	start_button.offset_bottom = 370.0
+	start_button.remove_theme_font_size_override("font_size")
 	daily_button.offset_left = -100.0
 	daily_button.offset_right = 100.0
 	daily_button.offset_top = 385.0
 	daily_button.offset_bottom = 435.0
+	daily_button.remove_theme_font_size_override("font_size")
 
-	# クリア画面ボタンを元の値に戻す
+	# クリア画面ボタンを元の横並び配置に戻す
+	share_btn.offset_left = -207.0
+	share_btn.offset_right = -77.0
+	share_btn.offset_top = 518.0
 	share_btn.offset_bottom = 558.0
+	share_btn.remove_theme_font_size_override("font_size")
+	retry_btn.offset_left = -65.0
+	retry_btn.offset_right = 65.0
+	retry_btn.offset_top = 518.0
 	retry_btn.offset_bottom = 558.0
+	retry_btn.remove_theme_font_size_override("font_size")
+	title_btn.offset_left = 77.0
+	title_btn.offset_right = 207.0
+	title_btn.offset_top = 518.0
 	title_btn.offset_bottom = 558.0
+	title_btn.remove_theme_font_size_override("font_size")
 
 
 # デバッグ: 即座にクリア
