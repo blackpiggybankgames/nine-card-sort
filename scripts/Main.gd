@@ -32,6 +32,8 @@ extends Node2D
 @onready var clear_mode_label: Label = $UILayer/ClearScreen/ClearModeLabel
 @onready var clear_stats_container: VBoxContainer = $UILayer/ClearScreen/StatsContainer
 @onready var share_btn: Button = $UILayer/ClearScreen/ShareButton
+@onready var retry_btn: Button = $UILayer/ClearScreen/RetryButton
+@onready var title_btn: Button = $UILayer/ClearScreen/TitleButton
 @onready var copy_toast_label: Label = $UILayer/ClearScreen/CopyToastLabel
 
 # リザルトカード SubViewport
@@ -863,21 +865,41 @@ func _setup_responsive_layout() -> void:
 
 # portrait 時のレイアウト適用
 func _apply_portrait_layout() -> void:
-	# タイトルボタンを viewport 中央付近に配置
-	var vp_h = get_viewport().size.y
-	var center_y = vp_h / 2.0
-	start_button.offset_top = center_y - 80
-	start_button.offset_bottom = center_y - 30
-	daily_button.offset_top = center_y - 10
-	daily_button.offset_bottom = center_y + 40
+	var center_y = get_viewport().size.y / 2.0
+
+	# タイトルボタン: 幅280px・高さ90px、ペアを中央に配置（gap 20px）
+	var btn_top = center_y - 100.0
+	start_button.offset_left = -140.0
+	start_button.offset_right = 140.0
+	start_button.offset_top = btn_top
+	start_button.offset_bottom = btn_top + 90.0
+	daily_button.offset_left = -140.0
+	daily_button.offset_right = 140.0
+	daily_button.offset_top = btn_top + 110.0
+	daily_button.offset_bottom = btn_top + 200.0
+
+	# クリア画面ボタン: 高さを90pxに拡大（横並び配置は維持）
+	share_btn.offset_bottom = 608.0
+	retry_btn.offset_bottom = 608.0
+	title_btn.offset_bottom = 608.0
 
 
 # landscape 時のレイアウト適用（PC・横向き: 元の値に戻す）
 func _apply_landscape_layout() -> void:
+	# タイトルボタンを元の値に戻す
+	start_button.offset_left = -100.0
+	start_button.offset_right = 100.0
 	start_button.offset_top = 320.0
 	start_button.offset_bottom = 370.0
+	daily_button.offset_left = -100.0
+	daily_button.offset_right = 100.0
 	daily_button.offset_top = 385.0
 	daily_button.offset_bottom = 435.0
+
+	# クリア画面ボタンを元の値に戻す
+	share_btn.offset_bottom = 558.0
+	retry_btn.offset_bottom = 558.0
+	title_btn.offset_bottom = 558.0
 
 
 # デバッグ: 即座にクリア
