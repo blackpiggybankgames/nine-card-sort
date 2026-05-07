@@ -552,7 +552,7 @@ func _update_result_card() -> void:
 	else:
 		rc_mode_label.text = "フリーモード"
 
-	rc_moves_label.text = "%d 手でクリア" % turn_count
+	rc_moves_label.text = str(turn_count)
 	rc_skip_label.text = "スキップ: %d 回" % skip_count
 	rc_footer_label.text = "%s  %s" % [Config.get_share_hashtag(), Config.get_share_url(debug_mode)]
 
