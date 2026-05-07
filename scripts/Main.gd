@@ -27,6 +27,7 @@ extends Node2D
 
 # クリア画面
 @onready var board_moves_label: Label = $UILayer/ClearScreen/BoardMovesLabel
+@onready var clear_mode_label: Label = $UILayer/ClearScreen/ClearModeLabel
 @onready var clear_stats_container: VBoxContainer = $UILayer/ClearScreen/StatsContainer
 @onready var share_btn: Button = $UILayer/ClearScreen/ShareButton
 @onready var copy_toast_label: Label = $UILayer/ClearScreen/CopyToastLabel
@@ -125,6 +126,12 @@ func _show_clear_screen(turn_count: int) -> void:
 	deck_display.set_all_selectable(false)  # カードのクリックは無効化
 	deck_display.clear_highlights()
 	board_moves_label.text = str(turn_count)
+	if game_manager.is_daily_mode:
+		var seed = game_manager.get_daily_seed()
+		var date_str = "%d/%02d/%02d" % [seed / 10000, (seed % 10000) / 100, seed % 100]
+		clear_mode_label.text = "デイリーチャレンジ（%s）" % date_str
+	else:
+		clear_mode_label.text = "フリーモード"
 	_populate_ability_stats()
 
 
