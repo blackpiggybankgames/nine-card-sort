@@ -10,6 +10,8 @@ extends Node2D
 @onready var ui_layer: CanvasLayer = $UILayer
 @onready var background: TextureRect = $Background
 @onready var title_screen: Control = $UILayer/TitleScreen
+@onready var start_button: Button = $UILayer/TitleScreen/StartButton
+@onready var daily_button: Button = $UILayer/TitleScreen/DailyChallengeButton
 @onready var game_ui: Control = $UILayer/GameUI
 @onready var clear_screen: Control = $UILayer/ClearScreen
 
@@ -859,14 +861,23 @@ func _setup_responsive_layout() -> void:
 		_apply_landscape_layout()
 
 
-# portrait 時のレイアウト適用（Day2〜4 で実装予定）
+# portrait 時のレイアウト適用
 func _apply_portrait_layout() -> void:
-	pass
+	# タイトルボタンを viewport 中央付近に配置
+	var vp_h = get_viewport().size.y
+	var center_y = vp_h / 2.0
+	start_button.offset_top = center_y - 80
+	start_button.offset_bottom = center_y - 30
+	daily_button.offset_top = center_y - 10
+	daily_button.offset_bottom = center_y + 40
 
 
-# landscape 時のレイアウト適用（PC・横向き: 現状維持）
+# landscape 時のレイアウト適用（PC・横向き: 元の値に戻す）
 func _apply_landscape_layout() -> void:
-	pass
+	start_button.offset_top = 320.0
+	start_button.offset_bottom = 370.0
+	daily_button.offset_top = 385.0
+	daily_button.offset_bottom = 435.0
 
 
 # デバッグ: 即座にクリア
