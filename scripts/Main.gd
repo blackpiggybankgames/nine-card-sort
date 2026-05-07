@@ -66,6 +66,9 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_update_background_size)
 	_update_background_size()
 
+	# 画面サイズ変更時にレイアウトを再適用（回転対応）
+	get_viewport().size_changed.connect(_setup_responsive_layout)
+
 	# シグナル接続
 	game_manager.turn_started.connect(_on_turn_started)
 	game_manager.turn_ended.connect(_on_turn_ended)
@@ -81,6 +84,9 @@ func _ready() -> void:
 
 	# 初期状態はタイトル画面
 	_show_title_screen()
+
+	# 起動時にレイアウトを適用
+	_setup_responsive_layout()
 
 
 # 背景サイズを画面に合わせる
@@ -836,6 +842,31 @@ func _show_step_label(text: String) -> void:
 func _hide_step_label() -> void:
 	step_label.visible = false
 	step_label_bg.visible = false
+
+
+# ===== レスポンシブレイアウト =====
+
+# portrait（縦長）判定: スマホ縦向き時に true
+func _is_portrait() -> bool:
+	return get_viewport().size.y > get_viewport().size.x
+
+
+# 画面向きに応じてレイアウトを切り替えるエントリポイント
+func _setup_responsive_layout() -> void:
+	if _is_portrait():
+		_apply_portrait_layout()
+	else:
+		_apply_landscape_layout()
+
+
+# portrait 時のレイアウト適用（Day2〜4 で実装予定）
+func _apply_portrait_layout() -> void:
+	pass
+
+
+# landscape 時のレイアウト適用（PC・横向き: 現状維持）
+func _apply_landscape_layout() -> void:
+	pass
 
 
 # デバッグ: 即座にクリア
