@@ -142,6 +142,12 @@ func _populate_ability_stats() -> void:
 
 	var sepia := Color(0.290, 0.235, 0.157, 1)  # ダークブラウン #4a3c28
 
+	# モード表示との区切り線
+	var sep_top := HSeparator.new()
+	sep_top.add_theme_color_override("color", Color(0.4, 0.25, 0.1, 0.5))
+	sep_top.custom_minimum_size = Vector2(0, 6)
+	clear_stats_container.add_child(sep_top)
+
 	# スキップ回数を先頭行として追加
 	var skip_row := _make_stat_row("スキップ", str(game_manager.get_skip_count()) + " 回", sepia)
 	clear_stats_container.add_child(skip_row)
