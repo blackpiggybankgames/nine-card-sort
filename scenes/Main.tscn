@@ -466,7 +466,7 @@ theme_override_font_sizes/font_size = 18
 text = "タイトルへ"
 
 [node name="ResultCardViewport" type="SubViewport" parent="."]
-size = Vector2i(340, 520)
+size = Vector2i(340, 506)
 render_target_update_mode = 4
 
 [node name="ResultCardScene" type="Control" parent="ResultCardViewport"]
@@ -479,16 +479,14 @@ grow_vertical = 2
 
 [node name="CardBG" type="TextureRect" parent="ResultCardViewport/ResultCardScene"]
 layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -169.5
-offset_top = 7.0
-offset_right = 169.5
-offset_bottom = 513.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
+grow_vertical = 2
 texture = ExtResource("16_rb")
 expand_mode = 1
+stretch_mode = 0
 
 [node name="ModeLabel" type="Label" parent="ResultCardViewport/ResultCardScene"]
 layout_mode = 1
@@ -496,9 +494,9 @@ anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -123.0
-offset_top = 111.0
+offset_top = 104.0
 offset_right = 123.0
-offset_bottom = 127.0
+offset_bottom = 120.0
 grow_horizontal = 2
 theme_override_colors/font_color = Color(0.29, 0.235, 0.157, 1)
 theme_override_font_sizes/font_size = 14
@@ -511,9 +509,9 @@ anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -7.0
-offset_top = 29.0
+offset_top = 22.0
 offset_right = 48.0
-offset_bottom = 65.0
+offset_bottom = 58.0
 grow_horizontal = 2
 theme_override_colors/font_color = Color(0.361, 0.239, 0.063, 1)
 theme_override_font_sizes/font_size = 26
@@ -526,9 +524,9 @@ anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -123.0
-offset_top = 130.5
+offset_top = 123.5
 offset_right = 123.0
-offset_bottom = 491.5
+offset_bottom = 484.5
 grow_horizontal = 2
 
 [connection signal="pressed" from="UILayer/TitleScreen/StartButton" to="." method="_on_start_button_pressed"]
