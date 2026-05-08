@@ -12,7 +12,7 @@ const CARD_SCENE_PATH = "res://scenes/Card.tscn"
 
 # 表示設定
 @export var fan_angle: float = 8.0      # 1枚あたりの角度
-@export var card_spacing: float = 80.0  # カード間の水平距離
+@export var card_spacing: float = 40.0  # カード間の水平距離（390px 幅基準）
 @export var vertical_offset: float = 5.0 # 1枚あたりの垂直オフセット
 
 # アニメーション設定（後から調整しやすいように）
@@ -45,12 +45,6 @@ func _ready() -> void:
 func _update_position() -> void:
 	var viewport_size = get_viewport_rect().size
 	position = Vector2(viewport_size.x / 2, viewport_size.y * 0.45)
-
-	# portrait 時はカード間隔を縮小（9枚が800px幅に収まるよう）
-	if viewport_size.y > viewport_size.x:
-		card_spacing = 60.0
-	else:
-		card_spacing = 80.0
 
 	if not deck_data.is_empty():
 		_update_card_positions_immediately(deck_data)

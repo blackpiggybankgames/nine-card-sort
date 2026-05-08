@@ -71,9 +71,6 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_update_background_size)
 	_update_background_size()
 
-	# 画面サイズ変更時にレイアウトを再適用（回転対応）
-	get_viewport().size_changed.connect(_setup_responsive_layout)
-
 	# シグナル接続
 	game_manager.turn_started.connect(_on_turn_started)
 	game_manager.turn_ended.connect(_on_turn_ended)
@@ -89,9 +86,6 @@ func _ready() -> void:
 
 	# 初期状態はタイトル画面
 	_show_title_screen()
-
-	# 起動時にレイアウトを適用
-	_setup_responsive_layout()
 
 
 # 背景サイズを画面に合わせる
@@ -847,180 +841,6 @@ func _show_step_label(text: String) -> void:
 func _hide_step_label() -> void:
 	step_label.visible = false
 	step_label_bg.visible = false
-
-
-# ===== レスポンシブレイアウト =====
-
-# portrait（縦長）判定: スマホ縦向き時に true
-# 幅600px以上（iPad等タブレット）はlandscape扱いにする
-func _is_portrait() -> bool:
-	var vp: Vector2i = get_viewport().size
-	return vp.y > vp.x and vp.x < 600
-
-
-# 画面向きに応じてレイアウトを切り替えるエントリポイント
-func _setup_responsive_layout() -> void:
-	if _is_portrait():
-		_apply_portrait_layout()
-	else:
-		_apply_landscape_layout()
-
-
-# portrait 時のレイアウト適用
-func _apply_portrait_layout() -> void:
-	# UILayer CanvasLayer は論理仮想座標空間（幅800基準）で描画される
-	# portrait 時は幅が制約になるため、論理高さ = device_h × base_w / device_w
-	# DPR は分子・分母に同じく掛かるため自然に相殺される
-	var vp_h: float = float(get_viewport().size.y) * 800.0 / float(get_viewport().size.x)
-	var center_y: float = vp_h / 2.0
-
-	# タイトルボタン: 幅560px・高さ160px、ペアを中央に配置（gap 20px）
-	var btn_top = center_y - 170.0
-	start_button.offset_left = -280.0
-	start_button.offset_right = 280.0
-	start_button.offset_top = btn_top
-	start_button.offset_bottom = btn_top + 160.0
-	start_button.add_theme_font_size_override("font_size", 36)
-	daily_button.offset_left = -280.0
-	daily_button.offset_right = 280.0
-	daily_button.offset_top = btn_top + 180.0
-	daily_button.offset_bottom = btn_top + 340.0
-	daily_button.add_theme_font_size_override("font_size", 36)
-
-	# ゲームボタン: 横並び・幅240px・高さ180px
-	use_ability_btn.offset_left = -250.0
-	use_ability_btn.offset_right = -10.0
-	use_ability_btn.offset_top = -200.0
-	use_ability_btn.offset_bottom = -20.0
-	use_ability_btn.add_theme_font_size_override("font_size", 32)
-	skip_btn.offset_left = 10.0
-	skip_btn.offset_right = 250.0
-	skip_btn.offset_top = -200.0
-	skip_btn.offset_bottom = -20.0
-	skip_btn.add_theme_font_size_override("font_size", 32)
-
-	# クリア画面ボタン: 縦1列・幅560px・高さ160px、画面下部に配置（gap 20px）
-	# カード表示(y≈700〜900)と重ならないよう画面下部から配置
-	var cb_top = vp_h - 540.0  # 3×160 + 2×20 = 520px、下マージン20px
-	share_btn.offset_left = -280.0
-	share_btn.offset_right = 280.0
-	share_btn.offset_top = cb_top
-	share_btn.offset_bottom = cb_top + 160.0
-	share_btn.add_theme_font_size_override("font_size", 32)
-	retry_btn.offset_left = -280.0
-	retry_btn.offset_right = 280.0
-	retry_btn.offset_top = cb_top + 180.0
-	retry_btn.offset_bottom = cb_top + 340.0
-	retry_btn.add_theme_font_size_override("font_size", 32)
-	title_btn.offset_left = -280.0
-	title_btn.offset_right = 280.0
-	title_btn.offset_top = cb_top + 360.0
-	title_btn.offset_bottom = cb_top + 520.0
-	title_btn.add_theme_font_size_override("font_size", 32)
-
-	# クリア画面リザルトボード: カード位置(y=vp_h×0.45)に中央合わせ、ボタン上端まで最大化
-	# 元ボードサイズ: 幅339px・高さ506px（top=7, bottom=513）
-	var card_y: float = vp_h * 0.45
-	var _half_a: float = card_y - 15.0
-	var _half_b: float = cb_top - 20.0 - card_y
-	var board_half_h: float = _half_a if _half_a <= _half_b else _half_b
-	var board_h: float = board_half_h * 2.0
-	var board_top: float = card_y - board_half_h
-	var sf: float = board_h / 506.0  # 元ボード高さ(506px)に対するスケール係数
-
-	result_board.offset_left = -169.5 * sf
-	result_board.offset_right = 169.5 * sf
-	result_board.offset_top = board_top
-	result_board.offset_bottom = board_top + board_h
-
-	# BoardMovesLabel（元: top=29, bottom=65, left=-7, right=48）
-	board_moves_label.offset_left = -7.0 * sf
-	board_moves_label.offset_right = 48.0 * sf
-	board_moves_label.offset_top = board_top + 22.0 * sf
-	board_moves_label.offset_bottom = board_top + 58.0 * sf
-	var moves_font_size: int = int(26.0 * sf)
-	board_moves_label.add_theme_font_size_override("font_size", moves_font_size)
-
-	# ClearModeLabel（元: top=111, bottom=127, left=-123, right=123）
-	clear_mode_label.offset_left = -123.0 * sf
-	clear_mode_label.offset_right = 123.0 * sf
-	clear_mode_label.offset_top = board_top + 104.0 * sf
-	clear_mode_label.offset_bottom = board_top + 120.0 * sf
-	var mode_font_size: int = int(14.0 * sf)
-	clear_mode_label.add_theme_font_size_override("font_size", mode_font_size)
-
-	# StatsContainer（元: top=130.5, bottom=491.5, left=-123, right=123）
-	clear_stats_container.offset_left = -123.0 * sf
-	clear_stats_container.offset_right = 123.0 * sf
-	clear_stats_container.offset_top = board_top + 123.5 * sf
-	clear_stats_container.offset_bottom = board_top + 484.5 * sf
-
-
-# landscape 時のレイアウト適用（PC・横向き: 元の値に戻す）
-func _apply_landscape_layout() -> void:
-	# タイトルボタンを元の値に戻す
-	start_button.offset_left = -100.0
-	start_button.offset_right = 100.0
-	start_button.offset_top = 320.0
-	start_button.offset_bottom = 370.0
-	start_button.remove_theme_font_size_override("font_size")
-	daily_button.offset_left = -100.0
-	daily_button.offset_right = 100.0
-	daily_button.offset_top = 385.0
-	daily_button.offset_bottom = 435.0
-	daily_button.remove_theme_font_size_override("font_size")
-
-	# ゲームボタンを元の値に戻す
-	use_ability_btn.offset_left = -180.0
-	use_ability_btn.offset_right = -20.0
-	use_ability_btn.offset_top = -70.0
-	use_ability_btn.offset_bottom = -20.0
-	use_ability_btn.remove_theme_font_size_override("font_size")
-	skip_btn.offset_left = 20.0
-	skip_btn.offset_right = 180.0
-	skip_btn.offset_top = -70.0
-	skip_btn.offset_bottom = -20.0
-	skip_btn.remove_theme_font_size_override("font_size")
-
-	# クリア画面ボタンを元の横並び配置に戻す
-	share_btn.offset_left = -207.0
-	share_btn.offset_right = -77.0
-	share_btn.offset_top = 518.0
-	share_btn.offset_bottom = 558.0
-	share_btn.remove_theme_font_size_override("font_size")
-	retry_btn.offset_left = -65.0
-	retry_btn.offset_right = 65.0
-	retry_btn.offset_top = 518.0
-	retry_btn.offset_bottom = 558.0
-	retry_btn.remove_theme_font_size_override("font_size")
-	title_btn.offset_left = 77.0
-	title_btn.offset_right = 207.0
-	title_btn.offset_top = 518.0
-	title_btn.offset_bottom = 558.0
-	title_btn.remove_theme_font_size_override("font_size")
-
-	# クリア画面リザルトボードを元の位置・サイズに戻す
-	result_board.offset_left = -169.5
-	result_board.offset_right = 169.5
-	result_board.offset_top = 7.0
-	result_board.offset_bottom = 513.0
-
-	board_moves_label.offset_left = -7.0
-	board_moves_label.offset_right = 48.0
-	board_moves_label.offset_top = 29.0
-	board_moves_label.offset_bottom = 65.0
-	board_moves_label.remove_theme_font_size_override("font_size")
-
-	clear_mode_label.offset_left = -123.0
-	clear_mode_label.offset_right = 123.0
-	clear_mode_label.offset_top = 111.0
-	clear_mode_label.offset_bottom = 127.0
-	clear_mode_label.remove_theme_font_size_override("font_size")
-
-	clear_stats_container.offset_left = -123.0
-	clear_stats_container.offset_right = 123.0
-	clear_stats_container.offset_top = 130.5
-	clear_stats_container.offset_bottom = 491.5
 
 
 # デバッグ: 即座にクリア
