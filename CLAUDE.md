@@ -74,6 +74,7 @@ Godot 4.3 / GDScript / Web Export / GitHub Pages配信。
 | /add-tests | テストコード作成（GUT使用） | 一時ドキュメント名（任意） |
 | /run-tests | テスト実行・結果確認 | - |
 | /sync-docs | ドキュメント同期チェック | - |
+| /gdscript-check | GDScript（Godot 4.3）の型制約セルフチェック（各スキルから自動呼び出し） | - |
 
 詳細手順は .claude/skills/<スキル名>/SKILL.md を参照。
 使用例: `/change-card attack-buff-rework.md`

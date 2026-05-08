@@ -22,7 +22,8 @@ description: >
    - `tests/` ディレクトリに配置
    - ファイル名は `test_<機能名>.gd`（例: `test_game_state.gd`）
    - GUTの規約に従う（詳細は `references/gut_conventions.md`）
-4. `/run-tests` スキルでテストを実行し、全件パスを確認する
+4. `/gdscript-check` スキルでセルフチェックを実行する
+5. `/run-tests` スキルでテストを実行し、全件パスを確認する
 5. 一時ドキュメントを削除
    - `rm docs/temp/add-tests.md`
 
