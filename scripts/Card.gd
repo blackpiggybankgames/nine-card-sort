@@ -8,8 +8,8 @@ signal card_clicked(card_number: int)
 @export var card_number: int = 1
 
 # カードのサイズ
-const CARD_WIDTH: float = 100.0
-const CARD_HEIGHT: float = 150.0
+const CARD_WIDTH: float = 60.0
+const CARD_HEIGHT: float = 90.0
 
 # カードの色（アンティーク・カジノスタイルのアースカラー）
 var card_colors: Dictionary = {

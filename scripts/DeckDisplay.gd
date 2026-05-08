@@ -20,14 +20,14 @@ const CARD_SCENE_PATH = "res://scenes/Card.tscn"
 @export var animation_enabled: bool = true   # アニメーション有効/無効
 
 # コの字アニメーション設定
-@export var fly_height: float = -200.0          # 飛び出し高さ（DeckDisplay中心からの相対Y）
-@export var fly_depth: float = 250.0            # 底面パス時の最下点Y（発動カードが下側にある場合）
+@export var fly_height: float = -120.0          # 飛び出し高さ（DeckDisplay中心からの相対Y）
+@export var fly_depth: float = 150.0            # 底面パス時の最下点Y（発動カードが下側にある場合）
 @export var fly_up_duration: float = 0.15       # 上昇フェーズの時間（秒）
 @export var fly_horizontal_duration: float = 0.2 # 水平移動フェーズの時間（秒）
 @export var fly_down_duration: float = 0.15     # 降下フェーズの時間（秒）
 
 # 発動カード分離表示の設定
-@export var active_card_offset_y: float = 120.0  # 発動カードを下にずらす距離
+@export var active_card_offset_y: float = 90.0   # 発動カードを下にずらす距離
 
 var card_nodes: Dictionary = {}  # card_number -> Card ノード
 var deck_data: Array[int] = []
@@ -103,13 +103,13 @@ func _create_card(card_number: int, index: int) -> Card:
 	# 文字色にカードのアースカラーを使用して識別性を高める
 	var label = Label.new()
 	label.text = str(card_number)
-	label.add_theme_font_size_override("font_size", 48)
+	label.add_theme_font_size_override("font_size", 28)
 	# アースカラーをウォームブラウンへ40%ブレンドして彩度を落とし羊皮紙に馴染む色調に
 	var raw_color = card.card_colors.get(card_number, Color(0.29, 0.24, 0.16))
 	var text_color = raw_color.lerp(Color(0.38, 0.30, 0.22), 0.40)
 	label.add_theme_color_override("font_color", text_color)
 	label.add_theme_color_override("font_outline_color", Color(0.96, 0.90, 0.78, 0.85))
-	label.add_theme_constant_override("outline_size", 5)
+	label.add_theme_constant_override("outline_size", 3)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.size = Vector2(Card.CARD_WIDTH, Card.CARD_HEIGHT)
@@ -567,7 +567,7 @@ func show_insertion_arrows(valid_deck9_indices: Array) -> void:
 			arrow_x = (_get_target_position(idx - 1).x + _get_target_position(idx).x) * 0.5
 		# Y座標: カードファンの上方に固定
 		var arrow = InsertionArrow.new(idx)
-		arrow.position = Vector2(arrow_x, -100.0)
+		arrow.position = Vector2(arrow_x, -60.0)
 		arrow.insertion_clicked.connect(func(i): insertion_point_selected.emit(i))
 		add_child(arrow)
 		_insertion_arrows.append(arrow)
