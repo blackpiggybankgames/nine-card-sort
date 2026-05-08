@@ -921,7 +921,9 @@ func _apply_portrait_layout() -> void:
 	# クリア画面リザルトボード: カード位置(y=vp_h×0.45)に中央合わせ、ボタン上端まで最大化
 	# 元ボードサイズ: 幅339px・高さ506px（top=7, bottom=513）
 	var card_y: float = vp_h * 0.45
-	var board_half_h: float = minf(card_y - 15.0, cb_top - 20.0 - card_y)
+	var _half_a: float = card_y - 15.0
+	var _half_b: float = cb_top - 20.0 - card_y
+	var board_half_h: float = _half_a if _half_a <= _half_b else _half_b
 	var board_h: float = board_half_h * 2.0
 	var board_top: float = card_y - board_half_h
 	var sf: float = board_h / 506.0  # 元ボード高さ(506px)に対するスケール係数
@@ -936,14 +938,16 @@ func _apply_portrait_layout() -> void:
 	board_moves_label.offset_right = 48.0 * sf
 	board_moves_label.offset_top = board_top + 22.0 * sf
 	board_moves_label.offset_bottom = board_top + 58.0 * sf
-	board_moves_label.add_theme_font_size_override("font_size", int(round(26.0 * sf)))
+	var moves_font_size: int = int(26.0 * sf)
+	board_moves_label.add_theme_font_size_override("font_size", moves_font_size)
 
 	# ClearModeLabel（元: top=111, bottom=127, left=-123, right=123）
 	clear_mode_label.offset_left = -123.0 * sf
 	clear_mode_label.offset_right = 123.0 * sf
 	clear_mode_label.offset_top = board_top + 104.0 * sf
 	clear_mode_label.offset_bottom = board_top + 120.0 * sf
-	clear_mode_label.add_theme_font_size_override("font_size", int(round(14.0 * sf)))
+	var mode_font_size: int = int(14.0 * sf)
+	clear_mode_label.add_theme_font_size_override("font_size", mode_font_size)
 
 	# StatsContainer（元: top=130.5, bottom=491.5, left=-123, right=123）
 	clear_stats_container.offset_left = -123.0 * sf
