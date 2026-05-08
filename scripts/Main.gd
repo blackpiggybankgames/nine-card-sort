@@ -28,6 +28,7 @@ extends Node2D
 @onready var debug_container: Control = $UILayer/GameUI/DebugContainer
 
 # クリア画面
+@onready var result_board: TextureRect = $UILayer/ClearScreen/ResultBoard
 @onready var board_moves_label: Label = $UILayer/ClearScreen/BoardMovesLabel
 @onready var clear_mode_label: Label = $UILayer/ClearScreen/ClearModeLabel
 @onready var clear_stats_container: VBoxContainer = $UILayer/ClearScreen/StatsContainer
@@ -851,8 +852,10 @@ func _hide_step_label() -> void:
 # ===== レスポンシブレイアウト =====
 
 # portrait（縦長）判定: スマホ縦向き時に true
+# 幅600px以上（iPad等タブレット）はlandscape扱いにする
 func _is_portrait() -> bool:
-	return get_viewport().size.y > get_viewport().size.x
+	var vp := get_viewport().size
+	return vp.y > vp.x and vp.x < 600
 
 
 # 画面向きに応じてレイアウトを切り替えるエントリポイント
@@ -915,6 +918,39 @@ func _apply_portrait_layout() -> void:
 	title_btn.offset_bottom = cb_top + 520.0
 	title_btn.add_theme_font_size_override("font_size", 32)
 
+	# クリア画面リザルトボード: カード位置(y=vp_h×0.45)に中央合わせ、ボタン上端まで最大化
+	# 元ボードサイズ: 幅339px・高さ506px（top=7, bottom=513）
+	var card_y: float = vp_h * 0.45
+	var board_half_h: float = min(card_y - 15.0, cb_top - 20.0 - card_y)
+	var board_h: float = board_half_h * 2.0
+	var board_top: float = card_y - board_half_h
+	var sf: float = board_h / 506.0  # 元ボード高さ(506px)に対するスケール係数
+
+	result_board.offset_left = -169.5 * sf
+	result_board.offset_right = 169.5 * sf
+	result_board.offset_top = board_top
+	result_board.offset_bottom = board_top + board_h
+
+	# BoardMovesLabel（元: top=29, bottom=65, left=-7, right=48）
+	board_moves_label.offset_left = -7.0 * sf
+	board_moves_label.offset_right = 48.0 * sf
+	board_moves_label.offset_top = board_top + 22.0 * sf
+	board_moves_label.offset_bottom = board_top + 58.0 * sf
+	board_moves_label.add_theme_font_size_override("font_size", roundi(26.0 * sf))
+
+	# ClearModeLabel（元: top=111, bottom=127, left=-123, right=123）
+	clear_mode_label.offset_left = -123.0 * sf
+	clear_mode_label.offset_right = 123.0 * sf
+	clear_mode_label.offset_top = board_top + 104.0 * sf
+	clear_mode_label.offset_bottom = board_top + 120.0 * sf
+	clear_mode_label.add_theme_font_size_override("font_size", roundi(14.0 * sf))
+
+	# StatsContainer（元: top=130.5, bottom=491.5, left=-123, right=123）
+	clear_stats_container.offset_left = -123.0 * sf
+	clear_stats_container.offset_right = 123.0 * sf
+	clear_stats_container.offset_top = board_top + 123.5 * sf
+	clear_stats_container.offset_bottom = board_top + 484.5 * sf
+
 
 # landscape 時のレイアウト適用（PC・横向き: 元の値に戻す）
 func _apply_landscape_layout() -> void:
@@ -958,6 +994,29 @@ func _apply_landscape_layout() -> void:
 	title_btn.offset_top = 518.0
 	title_btn.offset_bottom = 558.0
 	title_btn.remove_theme_font_size_override("font_size")
+
+	# クリア画面リザルトボードを元の位置・サイズに戻す
+	result_board.offset_left = -169.5
+	result_board.offset_right = 169.5
+	result_board.offset_top = 7.0
+	result_board.offset_bottom = 513.0
+
+	board_moves_label.offset_left = -7.0
+	board_moves_label.offset_right = 48.0
+	board_moves_label.offset_top = 29.0
+	board_moves_label.offset_bottom = 65.0
+	board_moves_label.remove_theme_font_size_override("font_size")
+
+	clear_mode_label.offset_left = -123.0
+	clear_mode_label.offset_right = 123.0
+	clear_mode_label.offset_top = 111.0
+	clear_mode_label.offset_bottom = 127.0
+	clear_mode_label.remove_theme_font_size_override("font_size")
+
+	clear_stats_container.offset_left = -123.0
+	clear_stats_container.offset_right = 123.0
+	clear_stats_container.offset_top = 130.5
+	clear_stats_container.offset_bottom = 491.5
 
 
 # デバッグ: 即座にクリア
