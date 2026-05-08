@@ -884,6 +884,18 @@ func _apply_portrait_layout() -> void:
 	daily_button.offset_bottom = btn_top + 340.0
 	daily_button.add_theme_font_size_override("font_size", 36)
 
+	# ゲームボタン: 横並び・幅240px・高さ180px
+	use_ability_btn.offset_left = -250.0
+	use_ability_btn.offset_right = -10.0
+	use_ability_btn.offset_top = -200.0
+	use_ability_btn.offset_bottom = -20.0
+	use_ability_btn.add_theme_font_size_override("font_size", 32)
+	skip_btn.offset_left = 10.0
+	skip_btn.offset_right = 250.0
+	skip_btn.offset_top = -200.0
+	skip_btn.offset_bottom = -20.0
+	skip_btn.add_theme_font_size_override("font_size", 32)
+
 	# クリア画面ボタン: 縦1列・幅560px・高さ160px、画面下部に配置（gap 20px）
 	# カード表示(y≈700〜900)と重ならないよう画面下部から配置
 	var cb_top = vp_h - 540.0  # 3×160 + 2×20 = 520px、下マージン20px
@@ -917,6 +929,18 @@ func _apply_landscape_layout() -> void:
 	daily_button.offset_top = 385.0
 	daily_button.offset_bottom = 435.0
 	daily_button.remove_theme_font_size_override("font_size")
+
+	# ゲームボタンを元の値に戻す
+	use_ability_btn.offset_left = -180.0
+	use_ability_btn.offset_right = -20.0
+	use_ability_btn.offset_top = -70.0
+	use_ability_btn.offset_bottom = -20.0
+	use_ability_btn.remove_theme_font_size_override("font_size")
+	skip_btn.offset_left = 20.0
+	skip_btn.offset_right = 180.0
+	skip_btn.offset_top = -70.0
+	skip_btn.offset_bottom = -20.0
+	skip_btn.remove_theme_font_size_override("font_size")
 
 	# クリア画面ボタンを元の横並び配置に戻す
 	share_btn.offset_left = -207.0

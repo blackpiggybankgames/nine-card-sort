@@ -43,9 +43,17 @@ func _ready() -> void:
 
 
 func _update_position() -> void:
-	# 画面中央に配置（やや上寄り）
 	var viewport_size = get_viewport_rect().size
 	position = Vector2(viewport_size.x / 2, viewport_size.y * 0.45)
+
+	# portrait 時はカード間隔を縮小（9枚が800px幅に収まるよう）
+	if viewport_size.y > viewport_size.x:
+		card_spacing = 60.0
+	else:
+		card_spacing = 80.0
+
+	if not deck_data.is_empty():
+		_update_card_positions_immediately(deck_data)
 
 
 # 山札をリセット（ゲーム再開時に呼び出す）
