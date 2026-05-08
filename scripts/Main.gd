@@ -854,7 +854,7 @@ func _hide_step_label() -> void:
 # portrait（縦長）判定: スマホ縦向き時に true
 # 幅600px以上（iPad等タブレット）はlandscape扱いにする
 func _is_portrait() -> bool:
-	var vp := get_viewport().size
+	var vp: Vector2i = get_viewport().size
 	return vp.y > vp.x and vp.x < 600
 
 
