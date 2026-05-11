@@ -301,25 +301,25 @@ func ability_move_before(card_to_move: int, before_card: int) -> bool:
 	return true
 
 
-# 能力9（能力C）: 隣接2枚とその外側2枚の計4枚を逆順にする
-# pair_top_card: 選択した2枚ペアの上側カード
-# 例: [A,B,C,D,E] で B-C を選んだ場合 → 外側は A と D → [D,C,B,A,E]
-func ability_reverse_four(pair_top_card: int) -> bool:
-	var j = cards.find(pair_top_card)  # ペア上側のインデックス
+# 能力9: 先頭カードから4枚連続を逆順にする
+# first_card: 4枚グループの先頭カード（デッキで最も上側）
+# 例: [A,B,C,D,E] で A を先頭指定 → [D,C,B,A,E]
+func ability_reverse_four(first_card: int) -> bool:
+	var j = cards.find(first_card)  # 先頭カードのインデックス
 	if j == -1:
 		return false
-	# 外側4枚が存在する条件: j-1 >= 0 かつ j+2 <= size-1
-	if j == 0 or j + 2 > cards.size() - 1:
+	# 先頭から4枚が存在する条件: j+3 <= size-1
+	if j + 3 > cards.size() - 1:
 		return false
-	var c0 = cards[j - 1]
-	var c1 = cards[j]
-	var c2 = cards[j + 1]
-	var c3 = cards[j + 2]
+	var c0 = cards[j]
+	var c1 = cards[j + 1]
+	var c2 = cards[j + 2]
+	var c3 = cards[j + 3]
 	# 4枚を逆順に並べ替え
-	cards[j - 1] = c3
-	cards[j] = c2
-	cards[j + 1] = c1
-	cards[j + 2] = c0
+	cards[j] = c3
+	cards[j + 1] = c2
+	cards[j + 2] = c1
+	cards[j + 3] = c0
 	deck_changed.emit()
 	return true
 
@@ -363,7 +363,7 @@ func use_ability(card_number: int, target_card: int = -1, target_card2: int = -1
 				if target_card2 == -1:
 					return false
 				return ability_move_before(target_card, target_card2)
-		9:  # 4枚逆順: ペアの上側カードを指定
+		9:  # 4枚逆順: 4枚グループの先頭カードを指定
 			if target_card == -1:
 				return false
 			return ability_reverse_four(target_card)

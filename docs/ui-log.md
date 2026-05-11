@@ -1,4 +1,20 @@
 
+## 2026-05-11: カード選択UI改修（隣接拡張方式）
+
+### 変更内容
+複数カード選択が必要な能力（カード2・6・9）の選択UIを、代表カード1枚選択から全カードを逐次選択する「隣接拡張方式」に変更。
+
+**変更した能力:**
+- カード2（3枚順繰り）: 1クリック → 3クリック（1枚目自由選択、以降は隣接のみ）
+- カード6（2セット下送り）: 2クリック → 4クリック（ペア1を隣接拡張、ペア2を別途隣接拡張）
+- カード9（4枚逆順）: 1クリック → 4クリック（1枚目自由選択、以降は隣接のみ）
+
+**技術的変更:**
+- `GameManager`: シグナルを `target_selection_step_updated(card, step, selected_so_far)` に統一、`_required_target_count()` 追加
+- `Deck.ability_reverse_four()`: 引数を `pair_top_card` から `first_card`（4枚先頭）に変更
+- `DeckDisplay`: `set_adjacent_extension_selectable()` / `set_card6_pair2_start_selectable()` / `set_card6_pair2_adjacent_selectable()` 追加
+- `Main.gd`: 統一ハンドラ `_on_target_selection_step_updated()` 追加、カード9アニメーション更新
+
 ## 2026-04-07: 能力発動アニメーションのステップ分割
 
 ### 変更内容
@@ -173,3 +189,42 @@
 - フォントを NotoSansJP（ゴシック）→ NotoSerifJP（明朝体・可変フォント）に変更
 - HUDヘッダーを panel_hud.png → StyleBoxFlat（ダークブラウン #33241a + ゴールドボーダー）に変更
 - HUDラベルにアンティーククリーム色 (#f2e0b7)、InstructionLabel・StepLabel にアンティークゴールドを適用
+
+## 2026-05-11: ボタン文字の白つぶれ修正
+
+**対象**: 全画面のボタン（タイトル・ゲーム・クリア画面）
+
+**問題**:
+- ボタン文字が白くつぶれて読めなかった
+
+**原因**:
+1. 輝度ベースの透過 (`smoothstep(0.05, 0.25, lum)`) がボタン本体（暗い茶色）も半透明にしていた
+2. `COLOR = col` がフォントカラー（頂点カラー）を消し、テキストが白く表示されていた
+
+**修正内容** (`assets/shaders/black_transparent.gdshader`):
+- 輝度 → `max(r,g,b)` に変更：純粋な黒のみ透過、暗い茶色は不透過
+- `min(col.a, ...)` でフォントアトラスのアルファ形状を保持
+- `COLOR = col * COLOR` でフォントカラーを保持
+
+## 2026-05-11: ボタン disabled 状態の表示修正・フォントを太字化
+
+**対象**: 全画面のボタン（`assets/default_theme.tres`）
+
+**問題1**: キャンセルボタン表示中（能力選択モード）に能力を使用ボタンのラベルが読めない
+- 原因: `Button/styles/disabled` が未定義 → Godot デフォルトのフラット灰色スタイルになりボタン画像が消えていた
+- 修正: `StyleBoxTexture_primary_disabled` を追加（btn_primary_normal.png を dimmed で表示）
+- 合わせて `font_disabled_color` を `Color(0.62, 0.50, 0.30, 0.85)` に変更（視認性向上）
+
+**問題2**: 全ボタンの文字が細く読みづらい
+- 原因: `Button/fonts/font` 未設定のため NotoSerifJP がデフォルト wght:400 で表示されていた
+- 修正: `FontVariation_btn` (wght:700) を追加し `Button/fonts/font` に設定
+
+## 2026-05-11: ボタンフォントを ShipporiMincho-ExtraBold に変更
+
+**対象**: 全画面のボタン8個（Main.tscn）
+
+**変更内容**:
+- ボタンフォントを NotoSerifJP wght:700 → ShipporiMincho-ExtraBold.ttf に変更
+- Main.tscn に ext_resource として追加（id: 19_shippori）
+- `theme_override_fonts/font = ExtResource("19_shippori")` を8ボタン全てに設定
+- BoardMovesLabel・MovesCountLabel は従来どおり FontVariation_moves_bold を維持

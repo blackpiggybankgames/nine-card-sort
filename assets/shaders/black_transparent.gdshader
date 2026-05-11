@@ -2,8 +2,10 @@ shader_type canvas_item;
 
 void fragment() {
 	vec4 col = texture(TEXTURE, UV);
-	float lum = dot(col.rgb, vec3(0.299, 0.587, 0.114));
-	// 暗いピクセルほど透明にする（黒→完全透過、明るい色→不透明）
-	col.a = smoothstep(0.05, 0.25, lum);
-	COLOR = col;
+	float maxChan = max(max(col.r, col.g), col.b);
+	// 純粋な黒のみ透明にする（暗い茶色のボタン本体は透過しない）
+	// min() でフォントアトラスの既存アルファ形状も保持する
+	col.a = min(col.a, smoothstep(0.02, 0.1, maxChan));
+	// 頂点カラー（フォントカラー等）を保持する
+	COLOR = col * COLOR;
 }

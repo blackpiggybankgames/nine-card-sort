@@ -136,25 +136,26 @@ func test_ability8_rejects_self_target() -> void:
 	deck.cards.assign([1, 2, 3, 4, 5, 6, 7, 8])
 	assert_false(deck.ability_move_before(5, 5), "自分自身を対象にするとfalse")
 
-# === カード9: 外側含む4枚逆順 ===
+# === カード9: 4枚連続逆順 ===
 
 func test_ability9_reverses_four() -> void:
-	# [1,2,3,4,5,6,7,8] でペアトップ=3（index=2）
-	# c0=cards[1]=2, c1=cards[2]=3, c2=cards[3]=4, c3=cards[4]=5
+	# [1,2,3,4,5,6,7,8] で先頭カード=2（index=1）
+	# 4枚: cards[1]=2, cards[2]=3, cards[3]=4, cards[4]=5
 	# 逆順 → cards[1]=5, cards[2]=4, cards[3]=3, cards[4]=2
 	deck.cards.assign([1, 2, 3, 4, 5, 6, 7, 8])
-	var result = deck.ability_reverse_four(3)
-	assert_true(result, "有効なペア指定は成功")
-	assert_eq(deck.cards[1], 5, "最外左が最外右に")
-	assert_eq(deck.cards[2], 4, "内左が内右に")
-	assert_eq(deck.cards[3], 3, "内右が内左に")
-	assert_eq(deck.cards[4], 2, "最外右が最外左に")
+	var result = deck.ability_reverse_four(2)
+	assert_true(result, "有効な先頭カード指定は成功")
+	assert_eq(deck.cards[1], 5, "先頭が末尾に")
+	assert_eq(deck.cards[2], 4, "2番目が3番目に")
+	assert_eq(deck.cards[3], 3, "3番目が2番目に")
+	assert_eq(deck.cards[4], 2, "末尾が先頭に")
 
-func test_ability9_rejects_first_card() -> void:
+func test_ability9_accepts_first_position() -> void:
+	# 先頭カード=1（index=0）: 4枚 [1,2,3,4] → 有効
 	deck.cards.assign([1, 2, 3, 4, 5, 6, 7, 8])
-	assert_false(deck.ability_reverse_four(1), "先頭（外側が存在しない）はfalse")
+	assert_true(deck.ability_reverse_four(1), "index=0の先頭カードも有効")
 
 func test_ability9_rejects_near_end() -> void:
-	# ペアトップ=7（index=6）: j+2=8 > size-1=7 → false
+	# 先頭カード=7（index=6）: j+3=9 > size-1=7 → false
 	deck.cards.assign([1, 2, 3, 4, 5, 6, 7, 8])
-	assert_false(deck.ability_reverse_four(7), "末尾から2枚以内はfalse")
+	assert_false(deck.ability_reverse_four(7), "末尾から4枚分ない位置はfalse")

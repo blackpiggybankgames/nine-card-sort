@@ -308,6 +308,8 @@ bgImg.src = '/nine-card-sort/assets/images/result/result_card_bg.png';
 | 2 | 低 | divider_gold.png の区切り線がゲーム全体と調和していない。Add blendで黒は透過されているが、金の線の見た目が浮いている。画像の再生成（より透過に適したデザイン）またはブレンドモード・カラーモジュレート調整を検討。 | ClearScreen (DividerTop / DividerBottom) |
 | 3 | 中 | ボタン画像が光りすぎており、白い文字テキストが読めない。画像を再生成して輝度を抑えるか、`default_theme.tres` の `font_color` を暗い色（例: 濃い茶・黒）に変更して視認性を確保する。 | 全ボタン（Primary / Secondary） |
 | 4 | 低 | ボタン画像の背景（黒部分）が完全に透過されておらず、うっすら見えている。既知の課題 #1 と同根（画像の透過処理が不完全）。画像の再生成またはGodotのModulate/BlendMode調整で対処する。 | 全ボタン（btn_primary / btn_secondary） |
+| 5 | 中 | result_card_title_moves.png がリザルトカード背景（result_card_bg.png）となじんでいない。双方ともクリーム色系だが、プレート画像の縁が浮いて見える。画像の再生成（背景を透過またはカード背景に近い質感に変更）を検討。 | リザルトカード（MovesPlate） |
+| 6 | 中 | result_card_title_moves.png 上に重ねている手数テキスト（MovesCountLabel）の位置がずれている。プレートの文字「CLEARED! MOVES」との重複を避けつつ数値を適切な位置に収めるため、MovesCountLabel の offset_top / offset_bottom を調整する。 | リザルトカード（MovesCountLabel） |
 
 ---
 

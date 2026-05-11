@@ -469,6 +469,71 @@ func set_adjacent_value_selectable(source_card: int) -> void:
 			card.set_selectable(abs(card_number - source_card) == 1)
 
 
+# カード2・9の多段選択用: 選択済みグループの両端に隣接するカードのみ選択可能に
+# already_selected: 選択済みカード番号の配列（1枚以上）
+func set_adjacent_extension_selectable(already_selected: Array[int]) -> void:
+	var selected_8deck: Array[int] = []
+	for cn in already_selected:
+		selected_8deck.append(deck_data.find(cn) - 1)  # 8-card index
+
+	var lo: int = selected_8deck[0]
+	var hi: int = selected_8deck[0]
+	for j in selected_8deck:
+		if j < lo:
+			lo = j
+		if j > hi:
+			hi = j
+
+	for card_number in card_nodes:
+		var card = card_nodes[card_number]
+		if is_instance_valid(card):
+			var k = deck_data.find(card_number) - 1
+			card.set_selectable((k == lo - 1 and k >= 0) or (k == hi + 1 and k <= 7))
+
+
+# カード6の2組目開始カードを選択可能に
+# pair1_selected: 1組目として選んだカード番号の配列（2枚）
+func set_card6_pair2_start_selectable(pair1_selected: Array[int]) -> void:
+	var p1_idxs: Array[int] = []
+	for cn in pair1_selected:
+		p1_idxs.append(deck_data.find(cn) - 1)
+
+	var lo: int = p1_idxs[0]
+	for j in p1_idxs:
+		if j < lo:
+			lo = j
+
+	for card_number in card_nodes:
+		var card = card_nodes[card_number]
+		if is_instance_valid(card):
+			var k = deck_data.find(card_number) - 1
+			if k in p1_idxs:
+				card.set_selectable(false)
+				continue
+			# ペア (k, k+1): pair_top=k、|k - lo| >= 2 が必要
+			var can_pair_right = (k + 1 <= 7) and ((k + 1) not in p1_idxs) and (abs(k - lo) >= 2)
+			# ペア (k-1, k): pair_top=k-1、|k-1 - lo| >= 2 が必要
+			var can_pair_left = (k - 1 >= 0) and ((k - 1) not in p1_idxs) and (abs(k - 1 - lo) >= 2)
+			card.set_selectable(can_pair_right or can_pair_left)
+
+
+# カード6の2組目の2枚目を選択可能に（2組目の1枚目に隣接するカード）
+# all_selected: 選択済みカード番号 [pair1_a, pair1_b, pair2_start]
+func set_card6_pair2_adjacent_selectable(all_selected: Array[int]) -> void:
+	var pair1_idxs: Array[int] = []
+	for i in range(2):
+		pair1_idxs.append(deck_data.find(all_selected[i]) - 1)
+	var pair2_start_idx = deck_data.find(all_selected[2]) - 1
+
+	for card_number in card_nodes:
+		var card = card_nodes[card_number]
+		if is_instance_valid(card):
+			var k = deck_data.find(card_number) - 1
+			var is_adjacent = (k == pair2_start_idx - 1 or k == pair2_start_idx + 1)
+			var not_already = (k not in pair1_idxs) and (k != pair2_start_idx)
+			card.set_selectable(is_adjacent and not_already and k >= 0 and k <= 7)
+
+
 # === 発動カード分離表示機能 ===
 
 # 発動カード（一番上）を山札から分離して表示

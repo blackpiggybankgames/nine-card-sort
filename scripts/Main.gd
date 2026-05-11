@@ -57,7 +57,7 @@ var _clear_zoom_done: bool = false
 func _ready() -> void:
 	# 日本語フォントのテーマを適用
 	# UILayer 配下と SubViewport 内の ResultCardScene の両方に適用する
-	var theme = load("res://assets/default_theme.tres")
+	var theme: Theme = load("res://assets/default_theme.tres")
 	if theme:
 		for child in ui_layer.get_children():
 			if child is Control:
@@ -67,6 +67,17 @@ func _ready() -> void:
 		if result_scene is Control:
 			result_scene.theme = theme
 
+	# disabled 状態でもボタン画像が表示されるよう StyleBox をコード適用
+	var disabled_style := StyleBoxTexture.new()
+	disabled_style.texture = load("res://assets/images/buttons/btn_primary_normal.png")
+	disabled_style.texture_margin_left = 24.0
+	disabled_style.texture_margin_right = 24.0
+	disabled_style.texture_margin_top = 18.0
+	disabled_style.texture_margin_bottom = 18.0
+	disabled_style.modulate_color = Color(0.55, 0.55, 0.55, 0.65)
+	use_ability_btn.add_theme_stylebox_override("disabled", disabled_style)
+	skip_btn.add_theme_stylebox_override("disabled", disabled_style)
+
 	# 画面サイズ変更時に背景を更新
 	get_viewport().size_changed.connect(_update_background_size)
 	_update_background_size()
@@ -74,8 +85,7 @@ func _ready() -> void:
 	# シグナル接続
 	game_manager.turn_started.connect(_on_turn_started)
 	game_manager.turn_ended.connect(_on_turn_ended)
-	game_manager.target_selection_required.connect(_on_target_selection_required)
-	game_manager.target_selection_step2_required.connect(_on_target_selection_step2_required)
+	game_manager.target_selection_step_updated.connect(_on_target_selection_step_updated)
 	game_manager.game_cleared.connect(_on_game_cleared)
 	deck_display.card_selected.connect(_on_card_selected)
 	game_manager.ability_ready.connect(_on_ability_ready)
@@ -247,83 +257,99 @@ func _on_turn_ended() -> void:
 	deck_display.reset_separation()  # 発動カードの分離状態をリセット
 
 
-# 対象選択が必要な時（1段階目）
-func _on_target_selection_required(card: int) -> void:
+# 対象選択ステップ更新（全カード・全ステップ共通ハンドラ）
+func _on_target_selection_step_updated(card: int, step: int, selected: Array[int]) -> void:
 	use_ability_btn.disabled = true
 	skip_btn.disabled = true
 	cancel_btn.visible = true
 
+	deck_display.set_all_selectable(false)
+	for cn in selected:
+		deck_display.set_card_highlighted(cn, true)
+
 	match card:
-		1:  # ±1入れ替え: ソースカードを選択（任意の1枚）
-			deck_display.set_all_selectable(true)
-			deck_display.set_card_selectable(game_manager.get_top_card(), false)
-			instruction_label.text = "入れ替えたいカードを選んでください"
-		2:  # 3枚順繰り: 3枚グループの先頭を選択
-			deck_display.set_trio_top_selectable()
-			instruction_label.text = "3枚グループの先頭（上側）カードを選んでください"
-		4:  # どかす: 端以外のカードを選択
+		1:
+			if step == 1:
+				deck_display.set_all_selectable(true)
+				deck_display.set_card_selectable(game_manager.get_top_card(), false)
+				instruction_label.text = "入れ替えたいカードを選んでください"
+			else:  # step == 2
+				deck_display.set_adjacent_value_selectable(selected[0])
+				instruction_label.text = str(selected[0]) + " を選択。数値±1のカードを選んでください"
+
+		2:
+			if step == 1:
+				deck_display.set_all_selectable(true)
+				deck_display.set_card_selectable(game_manager.get_top_card(), false)
+				instruction_label.text = "回転させる3枚の1枚目を選んでください"
+			else:
+				deck_display.set_adjacent_extension_selectable(selected)
+				instruction_label.text = str(selected.size() + 1) + "枚目を選んでください（隣のカード）"
+
+		4:
 			deck_display.set_non_edge_selectable()
 			instruction_label.text = "どかすカードを選んでください（端は選択不可）"
-		6:  # 2セット下送り: 1組目のペアトップを選択
-			deck_display.set_pair_top_selectable()
-			instruction_label.text = "1組目のペアの上側カードを選んでください"
-		7:  # 3枚ブロック差し込み: まず差し込むブロックの中央カードを選択
-			deck_display.set_block_center_any_selectable()
-			instruction_label.text = "差し込む3枚ブロックの中央カードを選んでください"
-		8:  # 上下反転裏面: 移動するカードを選択
-			deck_display.set_all_selectable(true)
-			deck_display.set_card_selectable(game_manager.get_top_card(), false)
-			instruction_label.text = "移動するカードを選んでください"
-		9:  # 4枚逆順: ペアトップカードを選択
-			deck_display.set_four_reverse_pair_selectable()
-			instruction_label.text = "逆順にする4枚の中央2枚の上側を選んでください"
+
+		6:
+			match step:
+				1:
+					deck_display.set_all_selectable(true)
+					deck_display.set_card_selectable(game_manager.get_top_card(), false)
+					instruction_label.text = "1組目の1枚目を選んでください"
+				2:
+					deck_display.set_adjacent_extension_selectable(selected)
+					instruction_label.text = "1組目の2枚目を選んでください（隣のカード）"
+				3:
+					deck_display.set_card6_pair2_start_selectable(selected)
+					instruction_label.text = "2組目の1枚目を選んでください"
+				4:
+					deck_display.set_card6_pair2_adjacent_selectable(selected)
+					instruction_label.text = "2組目の2枚目を選んでください（隣のカード）"
+
+		7:
+			if step == 1:
+				deck_display.set_block_center_any_selectable()
+				instruction_label.text = "差し込む3枚ブロックの中央カードを選んでください"
+			else:  # step == 2: 差し込み位置を矢印で表示
+				var block_center_card = selected[0]
+				var j_9 = deck_display.deck_data.find(block_center_card)
+				if j_9 > 0:
+					deck_display.set_card_highlighted(deck_display.deck_data[j_9 - 1], true)
+				deck_display.set_card_highlighted(block_center_card, true)
+				if j_9 < deck_display.deck_data.size() - 1:
+					deck_display.set_card_highlighted(deck_display.deck_data[j_9 + 1], true)
+				var invalid_gaps: Array = [j_9 - 1, j_9, j_9 + 1]
+				var valid_gaps: Array = []
+				for k in range(2, deck_display.deck_data.size()):
+					if k not in invalid_gaps:
+						valid_gaps.append(k)
+				deck_display.show_insertion_arrows(valid_gaps)
+				instruction_label.text = "差し込む場所の矢印を選んでください"
+
+		8:
+			if step == 1:
+				deck_display.set_all_selectable(true)
+				deck_display.set_card_selectable(game_manager.get_top_card(), false)
+				instruction_label.text = "移動するカードを選んでください"
+			else:  # step == 2: 挿入位置を矢印で表示
+				var move_idx = deck_display.deck_data.find(selected[0])
+				var valid_inserts: Array = []
+				for i in range(1, deck_display.deck_data.size()):
+					if i != move_idx:
+						valid_inserts.append(i)
+				deck_display.show_insertion_arrows(valid_inserts)
+				instruction_label.text = "矢印で挿入位置を選んでください（その直前に移動）"
+
+		9:
+			if step == 1:
+				deck_display.set_all_selectable(true)
+				deck_display.set_card_selectable(game_manager.get_top_card(), false)
+				instruction_label.text = "逆順にする4枚の1枚目を選んでください"
+			else:
+				deck_display.set_adjacent_extension_selectable(selected)
+				instruction_label.text = str(selected.size() + 1) + "枚目を選んでください（隣のカード）"
 
 	instruction_label.visible = true
-
-
-# 2段階選択の2段階目
-func _on_target_selection_step2_required(card: int, first_target: int) -> void:
-	deck_display.set_all_selectable(false)
-	deck_display.set_card_highlighted(first_target, true)
-
-	match card:
-		1:  # ±1入れ替え: ±1の数値のカードを選択
-			deck_display.set_adjacent_value_selectable(first_target)
-			instruction_label.text = str(first_target) + " を選択。数値±1のカードを選んでください"
-		6:  # 2セット下送り: 2組目のペアトップを選択（1組目と重複不可）
-			# 1組目のペアをハイライト
-			var partner_idx = game_manager.get_deck().find(first_target) + 1
-			if partner_idx < game_manager.get_deck().size():
-				deck_display.set_card_highlighted(game_manager.get_deck()[partner_idx], true)
-			deck_display.set_pair_top_selectable_excluding(first_target)
-			instruction_label.text = "2組目のペアの上側カードを選んでください"
-		7:  # 3枚ブロック差し込み: ブロック中央選択後、有効な差し込み位置を矢印で表示
-			# first_target = block_center_card（ステップ1で選んだカード）
-			var block_center_card = first_target
-			var j_9 = deck_display.deck_data.find(block_center_card)
-			# ブロック3枚をハイライト
-			if j_9 > 0:
-				deck_display.set_card_highlighted(deck_display.deck_data[j_9 - 1], true)
-			deck_display.set_card_highlighted(block_center_card, true)
-			if j_9 < deck_display.deck_data.size() - 1:
-				deck_display.set_card_highlighted(deck_display.deck_data[j_9 + 1], true)
-			# ブロック3枚と重なる位置を除外して矢印を表示
-			# 無効な矢印の9-card index: j_9-1, j_9, j_9+1
-			var invalid_gaps: Array = [j_9 - 1, j_9, j_9 + 1]
-			var valid_gaps: Array = []
-			for k in range(2, deck_display.deck_data.size()):
-				if k not in invalid_gaps:
-					valid_gaps.append(k)
-			deck_display.show_insertion_arrows(valid_gaps)
-			instruction_label.text = "差し込む場所の矢印を選んでください"
-		8:  # 任意移動裏面: 挿入位置を矢印で選択（card_to_move の位置を除く）
-			var move_idx = deck_display.deck_data.find(first_target)
-			var valid_inserts: Array = []
-			for i in range(1, deck_display.deck_data.size()):
-				if i != move_idx:
-					valid_inserts.append(i)
-			deck_display.show_insertion_arrows(valid_inserts)
-			instruction_label.text = "矢印で挿入位置を選んでください（その直前に移動）"
 
 
 # カードが選択された時
@@ -332,7 +358,6 @@ func _on_card_selected(card_number: int) -> void:
 		game_manager.select_target(card_number)
 
 		# 能力が実行されて状態が変わった場合のみ山札表示を更新
-		# （能力9で1枚目選択中はまだSELECTING_TARGET状態なので更新しない）
 		if game_manager.current_state != GameManager.GameState.SELECTING_TARGET:
 			deck_display.update_display(game_manager.get_deck())
 
@@ -816,17 +841,17 @@ func _compute_animation_steps(card: int, target1: int, target2: int, eight_deck:
 					steps.append({"deck": d.duplicate(), "label": str(target1) + " を " + str(target2) + " の前へ移動"})
 			# 表面（target1 == -1）: カード移動なし、ステップなし
 
-		9:  # 4枚逆順
+		9:  # 4枚逆順（target1 = 4枚グループの先頭カード）
 			var j = d.find(target1)
-			if j != -1 and j > 0 and j + 2 < d.size():
-				var c0 = d[j - 1]
-				var c1 = d[j]
-				var c2 = d[j + 1]
-				var c3 = d[j + 2]
-				d[j - 1] = c3
-				d[j] = c2
-				d[j + 1] = c1
-				d[j + 2] = c0
+			if j != -1 and j + 3 < d.size():
+				var c0 = d[j]
+				var c1 = d[j + 1]
+				var c2 = d[j + 2]
+				var c3 = d[j + 3]
+				d[j] = c3
+				d[j + 1] = c2
+				d[j + 2] = c1
+				d[j + 3] = c0
 				steps.append({"deck": d.duplicate(), "label": str(c0) + "・" + str(c1) + "・" + str(c2) + "・" + str(c3) + " を逆順に"})
 
 	return steps

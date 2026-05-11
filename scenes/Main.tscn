@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://b8iurcg2xupqi"]
+[gd_scene load_steps=21 format=3 uid="uid://b8iurcg2xupqi"]
 
 [ext_resource type="Script" path="res://scripts/Main.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/GameManager.gd" id="2_gm"]
@@ -10,9 +10,14 @@
 [ext_resource type="Texture2D" uid="uid://y0gs5r45bxs0" path="res://assets/images/title/logo_title.png" id="10_logo"]
 [ext_resource type="Texture2D" uid="uid://foqdn5oa5erw" path="res://assets/images/result/result_board.png" id="16_rb"]
 [ext_resource type="FontFile" uid="uid://bxisgs8c0xkiv" path="res://assets/fonts/NotoSerifJP-VariableFont_wght.ttf" id="17_font_serif"]
+[ext_resource type="Shader" path="res://assets/shaders/black_transparent.gdshader" id="18_shader_btn"]
+[ext_resource type="FontFile" uid="uid://c6elwt7m4mwxo" path="res://assets/fonts/ShipporiMincho-ExtraBold.ttf" id="19_shippori"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
 blend_mode = 1
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_btn"]
+shader = ExtResource("18_shader_btn")
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxTexture_hud"]
 bg_color = Color(0.2, 0.14, 0.08, 0.93)
@@ -100,6 +105,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="StartButton" type="Button" parent="UILayer/TitleScreen"]
+material = SubResource("ShaderMaterial_btn")
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -109,10 +115,12 @@ offset_top = 339.0
 offset_right = 136.5
 offset_bottom = 417.0
 grow_horizontal = 2
+theme_override_fonts/font = ExtResource("19_shippori")
 theme_override_font_sizes/font_size = 18
 text = "フリープレイ"
 
 [node name="DailyChallengeButton" type="Button" parent="UILayer/TitleScreen"]
+material = SubResource("ShaderMaterial_btn")
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -122,6 +130,7 @@ offset_top = 427.0
 offset_right = 136.5
 offset_bottom = 505.0
 grow_horizontal = 2
+theme_override_fonts/font = ExtResource("19_shippori")
 theme_override_font_sizes/font_size = 18
 text = "デイリーチャレンジ"
 
@@ -198,6 +207,7 @@ grow_vertical = 0
 alignment = 1
 
 [node name="UseAbilityButton" type="Button" parent="UILayer/GameUI"]
+material = SubResource("ShaderMaterial_btn")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -210,10 +220,12 @@ offset_right = -5.0
 offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 0
+theme_override_fonts/font = ExtResource("19_shippori")
 theme_override_font_sizes/font_size = 16
 text = "能力を使う"
 
 [node name="SkipButton" type="Button" parent="UILayer/GameUI"]
+material = SubResource("ShaderMaterial_btn")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -226,6 +238,7 @@ offset_right = 122.0
 offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 0
+theme_override_fonts/font = ExtResource("19_shippori")
 theme_override_font_sizes/font_size = 16
 theme_override_styles/hover = SubResource("StyleBoxTexture_secondary_hover")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_secondary_pressed")
@@ -234,6 +247,7 @@ text = "スキップ"
 
 [node name="CancelButton" type="Button" parent="UILayer/GameUI"]
 visible = false
+material = SubResource("ShaderMaterial_btn")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -246,6 +260,7 @@ offset_right = 136.5
 offset_bottom = -107.0
 grow_horizontal = 2
 grow_vertical = 0
+theme_override_fonts/font = ExtResource("19_shippori")
 theme_override_font_sizes/font_size = 16
 theme_override_styles/hover = SubResource("StyleBoxTexture_secondary_hover")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_secondary_pressed")
@@ -419,6 +434,7 @@ text = "リザルトカードを保存・コピーしました！"
 horizontal_alignment = 1
 
 [node name="ShareButton" type="Button" parent="UILayer/ClearScreen"]
+material = SubResource("ShaderMaterial_btn")
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -428,10 +444,12 @@ offset_top = 581.0
 offset_right = 136.5
 offset_bottom = 659.0
 grow_horizontal = 2
+theme_override_fonts/font = ExtResource("19_shippori")
 theme_override_font_sizes/font_size = 16
 text = "シェア"
 
 [node name="RetryButton" type="Button" parent="UILayer/ClearScreen"]
+material = SubResource("ShaderMaterial_btn")
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -441,10 +459,12 @@ offset_top = 669.0
 offset_right = 136.5
 offset_bottom = 746.0
 grow_horizontal = 2
+theme_override_fonts/font = ExtResource("19_shippori")
 theme_override_font_sizes/font_size = 16
 text = "もう一度"
 
 [node name="TitleButton" type="Button" parent="UILayer/ClearScreen"]
+material = SubResource("ShaderMaterial_btn")
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -454,6 +474,7 @@ offset_top = 756.0
 offset_right = 136.5
 offset_bottom = 834.0
 grow_horizontal = 2
+theme_override_fonts/font = ExtResource("19_shippori")
 theme_override_font_sizes/font_size = 16
 text = "タイトルへ"
 

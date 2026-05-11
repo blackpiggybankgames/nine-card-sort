@@ -29,16 +29,23 @@ func test_card8_no_target_when_not_flipped() -> void:
 	gm.card8_flipped = false
 	assert_false(gm._requires_target_selection(8), "カード8表面は対象選択不要")
 
-# === 2段階選択が必要なカード ===
+# === 必要選択数 ===
 
-func test_two_steps_cards_1_6_7() -> void:
-	for card in [1, 6, 7]:
-		assert_true(gm._requires_two_steps(card),
-			"カード%dは2段階選択が必要" % card)
+func test_required_target_count_cards() -> void:
+	assert_eq(gm._required_target_count(1), 2, "カード1は2回選択")
+	assert_eq(gm._required_target_count(2), 3, "カード2は3回選択")
+	assert_eq(gm._required_target_count(4), 1, "カード4は1回選択")
+	assert_eq(gm._required_target_count(6), 4, "カード6は4回選択")
+	assert_eq(gm._required_target_count(7), 2, "カード7は2回選択")
+	assert_eq(gm._required_target_count(9), 4, "カード9は4回選択")
 
-func test_card8_two_steps_when_flipped() -> void:
+func test_required_target_count_card8_flipped() -> void:
 	gm.card8_flipped = true
-	assert_true(gm._requires_two_steps(8), "カード8裏面は2段階選択")
+	assert_eq(gm._required_target_count(8), 2, "カード8裏面は2回選択")
+
+func test_required_target_count_card8_not_flipped() -> void:
+	gm.card8_flipped = false
+	assert_eq(gm._required_target_count(8), 0, "カード8表面は選択不要")
 
 # === カード8のフリップ状態 ===
 
