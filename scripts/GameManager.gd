@@ -6,8 +6,7 @@ class_name GameManager
 signal turn_started(top_card: int)      # 手番開始時
 signal turn_ended                        # 手番終了時
 signal ability_used(card: int)           # 能力使用時
-signal target_selection_required(card: int)  # 対象選択（1段階目）が必要な時
-signal target_selection_step2_required(card: int, first_target: int)  # 2段階選択の2段階目が必要な時
+signal target_selection_step_updated(card: int, step: int, selected_so_far: Array[int])  # 対象選択ステップ更新
 signal game_cleared(turn_count: int)     # ゲームクリア時
 signal ability_ready(card: int, target1: int, target2: int, ability_card: int)  # アニメーション付き発動要求
 
@@ -104,7 +103,7 @@ func use_ability() -> void:
 		current_state = GameState.SELECTING_TARGET
 		selecting_ability = top_card
 		selected_targets.clear()
-		target_selection_required.emit(top_card)
+		target_selection_step_updated.emit(top_card, 1, selected_targets)
 	else:
 		# 対象選択不要な能力はアニメーション付き発動を要求
 		ability_ready.emit(top_card, -1, -1, top_card)
@@ -112,25 +111,22 @@ func use_ability() -> void:
 
 # 対象選択が必要な能力かどうか
 func _requires_target_selection(card: int) -> bool:
-	# 2: 3枚グループの先頭カードを選択
-	# 4: どかすカードを選択（端以外）
-	# 9: ペアトップカードを選択
-	# 1, 6, 7: 2段階選択（1段階目が必要）
-	# 8: 裏面のときのみ2段階選択
 	if card == 8:
 		return card8_flipped
 	return card in [1, 2, 4, 6, 7, 9]
 
 
-# 2段階選択が必要な能力かどうか
-func _requires_two_steps(card: int) -> bool:
-	# 1: ソースカード → ±1ターゲットカード
-	# 6: 1組目ペアトップ → 2組目ペアトップ
-	# 7: ブロック中央カード → ギャップ右側カード（矢印）
-	# 8（裏面）: 移動カード → 挿入位置カード
-	if card == 8:
-		return card8_flipped
-	return card in [1, 6, 7]
+# 対象選択の必要数を返す
+func _required_target_count(card: int) -> int:
+	match card:
+		1: return 2   # ソースカード + ±1カード
+		2: return 3   # 3枚連続（各自選択）
+		4: return 1   # どかすカード
+		6: return 4   # 2ペア分（各ペア2枚）
+		7: return 2   # ブロック中央 + ギャップ右側（矢印）
+		8: return 2 if card8_flipped else 0
+		9: return 4   # 4枚連続（各自選択）
+		_: return 0
 
 
 # 対象を選択する（UI側から呼ばれる）
@@ -138,20 +134,64 @@ func select_target(card_number: int) -> void:
 	if current_state != GameState.SELECTING_TARGET:
 		return
 
-	if selected_targets.size() == 0:
-		# 1段階目の選択
-		selected_targets.append(card_number)
-		if _requires_two_steps(selecting_ability):
-			# 2段階目の選択を促す
-			target_selection_step2_required.emit(selecting_ability, card_number)
-		else:
-			# 1段階選択で完了 - アニメーション付き発動を要求
-			ability_ready.emit(selecting_ability, card_number, -1, selecting_ability)
+	selected_targets.append(card_number)
+	var needed = _required_target_count(selecting_ability)
 
-	elif selected_targets.size() == 1:
-		# 2段階目の選択 - アニメーション付き発動を要求
-		selected_targets.append(card_number)
-		ability_ready.emit(selecting_ability, selected_targets[0], selected_targets[1], selecting_ability)
+	if selected_targets.size() >= needed:
+		# 必要数が揃ったら能力発動
+		_emit_ability_ready()
+	else:
+		# 次のステップへ
+		target_selection_step_updated.emit(
+			selecting_ability,
+			selected_targets.size() + 1,
+			selected_targets.duplicate()
+		)
+
+
+# 選択済みターゲットからability_readyシグナルを発火
+func _emit_ability_ready() -> void:
+	var t1: int = -1
+	var t2: int = -1
+	match selecting_ability:
+		1:
+			t1 = selected_targets[0]
+			t2 = selected_targets[1]
+		2:
+			# 選択3枚をデッキ順にソート → 先頭がトリオトップ
+			var sorted2 = _sort_targets_by_deck_position(selected_targets)
+			t1 = sorted2[0]
+		4:
+			t1 = selected_targets[0]
+		6:
+			# 各ペアの上側（インデックスが小さい）カードをターゲットに
+			t1 = _get_pair_top(selected_targets[0], selected_targets[1])
+			t2 = _get_pair_top(selected_targets[2], selected_targets[3])
+		7:
+			t1 = selected_targets[0]  # ブロック中央カード
+			t2 = selected_targets[1]  # ギャップ右側カード
+		8:
+			t1 = selected_targets[0]  # 移動カード
+			t2 = selected_targets[1]  # 挿入先カード
+		9:
+			# 選択4枚をデッキ順にソート → 先頭が4枚グループの先頭カード
+			var sorted9 = _sort_targets_by_deck_position(selected_targets)
+			t1 = sorted9[0]
+	ability_ready.emit(selecting_ability, t1, t2, selecting_ability)
+
+
+# ターゲット配列をデッキ順（位置が上のもの順）にソートして返す
+func _sort_targets_by_deck_position(targets: Array[int]) -> Array[int]:
+	var result: Array[int] = targets.duplicate()
+	result.sort_custom(func(a: int, b: int) -> bool:
+		return deck.cards.find(a) < deck.cards.find(b)
+	)
+	return result
+
+
+# 2枚のカードのうち、デッキで上側（インデックスが小さい）のカードを返す
+func _get_pair_top(card_a: int, card_b: int) -> int:
+	return card_a if deck.cards.find(card_a) < deck.cards.find(card_b) else card_b
 
 
 # 対象選択をキャンセルする

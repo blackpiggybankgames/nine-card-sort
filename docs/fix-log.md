@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-05-11: 選択式能力でカードが光らず選択できないバグ
+
+**症状**: ゲーム画面で選択式カード能力（カード1/2/4/6/7/8/9）を発動しても、カードの枠が光らず選択もできない。
+
+**原因**: `GameManager.use_ability()` 内のシグナル emission で、`Array[int]` 宣言のシグナルパラメータに型なし `[]` を渡していた。Godot 4.3 は実行時型チェックでこれをエラーとして処理し、ハンドラ `_on_target_selection_step_updated` が呼ばれなかった。
+
+**修正**: `GameManager.gd` の `target_selection_step_updated.emit(top_card, 1, [])` を `emit(top_card, 1, selected_targets)` に変更（`selected_targets` は直前に `.clear()` 済みの `Array[int]`）。
+
+**変更ファイル**: `scripts/GameManager.gd`（1行）
+
+---
+
 ## 2026-04-08: カード[7] 3枚ブロック差し込み — カード重なりバグ
 
 **症状**: カード[7]の能力発動後にカードが重なって操作不能になる
