@@ -76,3 +76,13 @@
 **修正**: `add_theme_font_size_override("font_size", 16)` に変更（`DeckDisplay.gd` と同じ正しいAPI）。
 
 **ファイル**: `scripts/Main.gd`
+
+## 2026-05-12 シェアパネル黒背景透過バグ修正
+
+**症状**: シェアポップアップの `share_panel_board.png`・`close_button_x.png`・`gold_button_blank.png` の黒背景が透過されない
+
+**原因**: `board_tex`（TextureRect）と `close_btn`（TextureButton）に `black_transparent.gdshader` が未適用だった。`_make_gold_button` も都度シェーダーを生成していた
+
+**修正**: `_create_share_panel()` で ShaderMaterial を1つ生成しすべてのノードで共有。`_make_gold_button` シグネチャに `black_mat: ShaderMaterial` を追加して外部から受け取る形に変更
+
+**変更ファイル**: `scripts/Main.gd`

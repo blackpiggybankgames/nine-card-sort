@@ -6,6 +6,6 @@ void fragment() {
 	// 純粋な黒のみ透明にする（暗い茶色のボタン本体は透過しない）
 	// min() でフォントアトラスの既存アルファ形状も保持する
 	col.a = min(col.a, smoothstep(0.02, 0.1, maxChan));
-	// 頂点カラー（フォントカラー等）を保持する
-	COLOR = col * COLOR;
+	// * COLOR を外すことで頂点カラーによる暗転を防ぐ
+	COLOR = col;
 }

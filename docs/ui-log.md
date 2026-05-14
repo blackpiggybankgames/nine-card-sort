@@ -228,3 +228,10 @@
 - Main.tscn に ext_resource として追加（id: 19_shippori）
 - `theme_override_fonts/font = ExtResource("19_shippori")` を8ボタン全てに設定
 - BoardMovesLabel・MovesCountLabel は従来どおり FontVariation_moves_bold を維持
+
+## 2026-05-11 カード選択エフェクトのクリア修正
+
+- **対象**: ゲーム画面 / カード選択式能力発動時
+- **変更**: `_on_ability_ready` 冒頭で `set_all_selectable(false)` と `clear_highlights()` を呼ぶよう修正
+- **変更ファイル**: `scripts/Main.gd`
+- **理由**: カード選択完了 → 能力発動前のタイミングで選択可能エフェクト（ホワイトゴールドグロー・スケール拡大）が残り続けていた

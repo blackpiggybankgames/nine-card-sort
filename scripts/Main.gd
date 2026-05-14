@@ -53,6 +53,10 @@ var _skip_next_deck_update: bool = false
 # クリア演出: 能力発動中にズームを先行実施済みかどうかのフラグ
 var _clear_zoom_done: bool = false
 
+# シェアパネル
+var _share_panel: Control = null
+var _panel_toast: Label = null
+
 
 func _ready() -> void:
 	# 日本語フォントのテーマを適用
@@ -556,15 +560,165 @@ func _play_clear_sort_animation() -> void:
 		await deck_display.animation_completed
 
 
-# シェアボタン: スクリーンショット保存 + SNSテキストをクリップボードにコピー
+# シェアボタン: シェアパネルを表示する
 func _on_share_button_pressed() -> void:
-	share_btn.disabled = true
-	await _save_screenshot()
+	if _share_panel == null:
+		_create_share_panel()
+	_share_panel.visible = true
+
+
+# シェアパネルをGDScriptで動的生成してUILayerに追加する
+func _create_share_panel() -> void:
+	# フルスクリーンコンテナ（非表示）
+	_share_panel = Control.new()
+	_share_panel.name = "SharePanel"
+	_share_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_share_panel.visible = false
+	ui_layer.add_child(_share_panel)
+
+	# 半透明黒オーバーレイ（背景UIの操作をブロック）
+	var overlay := ColorRect.new()
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.color = Color(0.0, 0.0, 0.0, 0.70)
+	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	_share_panel.add_child(overlay)
+
+	# パネルコンテナ（画面中央）
+	var viewport_size: Vector2 = get_viewport_rect().size
+	var board_w := 350.0
+	var board_h := 500.0
+	var panel_container := Control.new()
+	panel_container.position = Vector2(
+		(viewport_size.x - board_w) * 0.5,
+		(viewport_size.y - board_h) * 0.5
+	)
+	panel_container.size = Vector2(board_w, board_h)
+	_share_panel.add_child(panel_container)
+
+	# 黒背景を透過させるシェーダー（COLOR = col で暗転を防ぐ）
+	var black_mat: ShaderMaterial = ShaderMaterial.new()
+	black_mat.shader = load("res://assets/shaders/black_transparent.gdshader") as Shader
+
+	# ボード背景画像（share_panel_board.png）
+	var board_tex := TextureRect.new()
+	board_tex.texture = load("res://assets/images/result/share_panel_board.png")
+	board_tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	board_tex.stretch_mode = TextureRect.STRETCH_SCALE
+	board_tex.size = Vector2(board_w, board_h)
+	board_tex.mouse_filter = Control.MOUSE_FILTER_PASS
+	board_tex.material = black_mat
+	panel_container.add_child(board_tex)
+
+	# ×閉じるボタン（右上）
+	var close_tex := load("res://assets/images/buttons/close_button_x.png")
+	var close_btn := TextureButton.new()
+	close_btn.texture_normal = close_tex
+	close_btn.ignore_texture_size = true
+	close_btn.stretch_mode = TextureButton.STRETCH_SCALE
+	close_btn.position = Vector2(board_w - 50.0, 6.0)
+	close_btn.size = Vector2(44.0, 44.0)
+	close_btn.pressed.connect(_on_share_panel_close)
+	close_btn.material = black_mat
+	panel_container.add_child(close_btn)
+
+	# 金色ボタン共通テクスチャ
+	var gold_tex := load("res://assets/images/buttons/gold_button_blank.png")
+
+	# ボタン3つを縦に並べる
+	var btn_w := 280.0
+	var btn_h := 70.0
+	var btn_spacing := 20.0
+	var btn_x := (board_w - btn_w) * 0.5
+	var btn_y_start := 170.0
+
+	var copy_btn := _make_gold_button(panel_container, "テキストをコピー", gold_tex, Vector2(btn_x, btn_y_start), Vector2(btn_w, btn_h), black_mat)
+	copy_btn.pressed.connect(_on_share_panel_copy_text)
+
+	var save_btn := _make_gold_button(panel_container, "画像を保存", gold_tex, Vector2(btn_x, btn_y_start + (btn_h + btn_spacing)), Vector2(btn_w, btn_h), black_mat)
+	save_btn.pressed.connect(_on_share_panel_save_image)
+
+	var survey_btn := _make_gold_button(panel_container, "アンケートに答える", gold_tex, Vector2(btn_x, btn_y_start + (btn_h + btn_spacing) * 2.0), Vector2(btn_w, btn_h), black_mat)
+	survey_btn.pressed.connect(_on_share_panel_survey)
+
+	# Toastラベル（操作完了メッセージ）
+	_panel_toast = Label.new()
+	_panel_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_panel_toast.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_panel_toast.add_theme_color_override("font_color", Color(0.3, 1.0, 0.3, 1.0))
+	_panel_toast.add_theme_font_size_override("font_size", 14)
+	_panel_toast.size = Vector2(board_w, 30.0)
+	_panel_toast.position = Vector2(0.0, board_h - 46.0)
+	_panel_toast.visible = false
+	panel_container.add_child(_panel_toast)
+
+
+# gold_button_blank.png を背景テクスチャ、Buttonを透明にして重ねる
+func _make_gold_button(parent: Control, label_text: String, gold_tex: Texture2D, pos: Vector2, sz: Vector2, black_mat: ShaderMaterial = null) -> Button:
+	# 背景: TextureRect（黒透過シェーダーを適用）
+	var bg := TextureRect.new()
+	bg.texture = gold_tex
+	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg.stretch_mode = TextureRect.STRETCH_SCALE
+	bg.position = pos
+	bg.size = sz
+	bg.mouse_filter = Control.MOUSE_FILTER_PASS
+	if black_mat != null:
+		bg.material = black_mat
+	parent.add_child(bg)
+
+	# ボタン: 背景なし（StyleBoxEmpty）でクリック判定とテキスト描画のみ担当
+	var btn := Button.new()
+	btn.text = label_text
+	btn.position = pos
+	btn.size = sz
+	var empty := StyleBoxEmpty.new()
+	btn.add_theme_stylebox_override("normal", empty)
+	btn.add_theme_stylebox_override("hover", empty)
+	btn.add_theme_stylebox_override("pressed", empty)
+	btn.add_theme_stylebox_override("focus", empty)
+	btn.add_theme_color_override("font_color", Color(0.20, 0.12, 0.02, 1.0))
+	btn.add_theme_color_override("font_hover_color", Color(0.30, 0.18, 0.03, 1.0))
+	btn.add_theme_color_override("font_pressed_color", Color(0.12, 0.07, 0.01, 1.0))
+	parent.add_child(btn)
+
+	return btn
+
+
+# ×ボタン: パネルを閉じる
+func _on_share_panel_close() -> void:
+	if _share_panel != null:
+		_share_panel.visible = false
+
+
+# テキストコピーボタン
+func _on_share_panel_copy_text() -> void:
 	DisplayServer.clipboard_set(_generate_share_text())
-	copy_toast_label.visible = true
+	_show_panel_toast("テキストをコピーしました！")
+
+
+# 画像保存ボタン
+func _on_share_panel_save_image() -> void:
+	await _save_screenshot()
+	_show_panel_toast("画像を保存しました！")
+
+
+# アンケートボタン: survey_url をブラウザで開く
+func _on_share_panel_survey() -> void:
+	var url := Config.get_survey_url(debug_mode)
+	if OS.has_feature("web"):
+		JavaScriptBridge.eval("window.open('" + url + "', '_blank')")
+	else:
+		OS.shell_open(url)
+
+
+# パネル内Toastラベルを2秒表示する
+func _show_panel_toast(msg: String) -> void:
+	if _panel_toast == null:
+		return
+	_panel_toast.text = msg
+	_panel_toast.visible = true
 	await get_tree().create_timer(2.0).timeout
-	copy_toast_label.visible = false
-	share_btn.disabled = false
+	_panel_toast.visible = false
 
 
 # SNS連携テキストを生成（140字以内）
@@ -674,6 +828,10 @@ func _on_ability_ready(card: int, target1: int, target2: int, ability_card: int)
 	skip_btn.disabled = true
 	cancel_btn.visible = false
 	instruction_label.visible = false
+
+	# カード選択エフェクトをクリア（能力発動前に選択可能表示を消す）
+	deck_display.set_all_selectable(false)
+	deck_display.clear_highlights()
 
 	# 分離アニメーション等が終わるまで待機
 	if deck_display.is_animating:

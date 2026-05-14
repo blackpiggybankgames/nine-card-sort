@@ -18,7 +18,9 @@
   "share": {
     "game_url": "https://blackpiggybankgames.github.io/nine-card-sort/",
     "game_url_debug": "https://blackpiggybankgames.github.io/nine-card-sort/draft/",
-    "hashtag": "#NineCardSort"
+    "hashtag": "#NineCardSort",
+    "survey_url": "https://docs.google.com/forms/d/e/1FAIpQLSfYi2skPpW6yWcaTEKpephsoMIH-ArUb3uzW6CwCeLNll2qPA/viewform?usp=pp_url&entry.2037161471=NINE+CARD+SORT&entry.1514449799=%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E3%82%B2%E3%83%BC%E3%83%A0",
+    "survey_url_debug": "https://docs.google.com/forms/d/e/1FAIpQLSfYi2skPpW6yWcaTEKpephsoMIH-ArUb3uzW6CwCeLNll2qPA/viewform?usp=pp_url&entry.2037161471=NINE+CARD+SORT&entry.1514449799=%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E3%82%B2%E3%83%BC%E3%83%A0"
   },
   "abilities": {
     "1": {"name": "±1入れ替え", "description": "数値が±1のカードと位置を入れ替える"},

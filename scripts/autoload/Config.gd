@@ -52,3 +52,11 @@ func get_share_url(is_debug: bool = false) -> String:
 func get_share_hashtag() -> String:
     var share = balance.get("share", {})
     return share.get("hashtag", "#NineCardSort")
+
+
+# アンケートURLを取得（デバッグ時はsurvey_url_debug）
+func get_survey_url(is_debug: bool = false) -> String:
+    var share = balance.get("share", {})
+    if is_debug:
+        return share.get("survey_url_debug", "https://google.com")
+    return share.get("survey_url", "https://google.com")
