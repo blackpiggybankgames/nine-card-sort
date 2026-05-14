@@ -621,9 +621,6 @@ func _create_share_panel() -> void:
 	close_btn.material = black_mat
 	panel_container.add_child(close_btn)
 
-	# 金色ボタン共通テクスチャ
-	var gold_tex := load("res://assets/images/buttons/gold_button_blank.png")
-
 	# ボタン3つを縦に並べる
 	var btn_w := 280.0
 	var btn_h := 70.0
@@ -631,13 +628,13 @@ func _create_share_panel() -> void:
 	var btn_x := (board_w - btn_w) * 0.5
 	var btn_y_start := 170.0
 
-	var copy_btn := _make_gold_button(panel_container, "テキストをコピー", gold_tex, Vector2(btn_x, btn_y_start), Vector2(btn_w, btn_h), black_mat)
+	var copy_btn := _make_gold_button(panel_container, "テキストをコピー", Vector2(btn_x, btn_y_start), Vector2(btn_w, btn_h), black_mat)
 	copy_btn.pressed.connect(_on_share_panel_copy_text)
 
-	var save_btn := _make_gold_button(panel_container, "画像を保存", gold_tex, Vector2(btn_x, btn_y_start + (btn_h + btn_spacing)), Vector2(btn_w, btn_h), black_mat)
+	var save_btn := _make_gold_button(panel_container, "画像を保存", Vector2(btn_x, btn_y_start + (btn_h + btn_spacing)), Vector2(btn_w, btn_h), black_mat)
 	save_btn.pressed.connect(_on_share_panel_save_image)
 
-	var survey_btn := _make_gold_button(panel_container, "アンケートに答える", gold_tex, Vector2(btn_x, btn_y_start + (btn_h + btn_spacing) * 2.0), Vector2(btn_w, btn_h), black_mat)
+	var survey_btn := _make_gold_button(panel_container, "アンケートに答える", Vector2(btn_x, btn_y_start + (btn_h + btn_spacing) * 2.0), Vector2(btn_w, btn_h), black_mat)
 	survey_btn.pressed.connect(_on_share_panel_survey)
 
 	# Toastラベル（操作完了メッセージ）
@@ -647,41 +644,45 @@ func _create_share_panel() -> void:
 	_panel_toast.add_theme_color_override("font_color", Color(0.3, 1.0, 0.3, 1.0))
 	_panel_toast.add_theme_font_size_override("font_size", 14)
 	_panel_toast.size = Vector2(board_w, 30.0)
-	_panel_toast.position = Vector2(0.0, board_h - 46.0)
+	_panel_toast.position = Vector2(0.0, 140.0)
 	_panel_toast.visible = false
 	panel_container.add_child(_panel_toast)
 
 
-# gold_button_blank.png を背景テクスチャ、Buttonを透明にして重ねる
-func _make_gold_button(parent: Control, label_text: String, gold_tex: Texture2D, pos: Vector2, sz: Vector2, black_mat: ShaderMaterial = null) -> Button:
-	# 背景: TextureRect（黒透過シェーダーを適用）
-	var bg := TextureRect.new()
-	bg.texture = gold_tex
-	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	bg.stretch_mode = TextureRect.STRETCH_SCALE
-	bg.position = pos
-	bg.size = sz
-	bg.mouse_filter = Control.MOUSE_FILTER_PASS
-	if black_mat != null:
-		bg.material = black_mat
-	parent.add_child(bg)
+# TextureButton（テクスチャ切り替えでホバー/プレスを表現）+ Label（テキスト）方式
+# TextureButtonにシェーダーを適用し、Labelは別ノードでフォントカラーを正しく保持する
+func _make_gold_button(parent: Control, label_text: String, pos: Vector2, sz: Vector2, black_mat: ShaderMaterial) -> TextureButton:
+	var container := Control.new()
+	container.position = pos
+	container.size = sz
+	parent.add_child(container)
 
-	# ボタン: 背景なし（StyleBoxEmpty）でクリック判定とテキスト描画のみ担当
-	var btn := Button.new()
-	btn.text = label_text
-	btn.position = pos
-	btn.size = sz
-	var empty := StyleBoxEmpty.new()
-	btn.add_theme_stylebox_override("normal", empty)
-	btn.add_theme_stylebox_override("hover", empty)
-	btn.add_theme_stylebox_override("pressed", empty)
-	btn.add_theme_stylebox_override("focus", empty)
-	btn.add_theme_color_override("font_color", Color(0.20, 0.12, 0.02, 1.0))
-	btn.add_theme_color_override("font_hover_color", Color(0.30, 0.18, 0.03, 1.0))
-	btn.add_theme_color_override("font_pressed_color", Color(0.12, 0.07, 0.01, 1.0))
-	parent.add_child(btn)
+	# TextureButton: テクスチャ切り替えでホバー/プレスを表現（頂点カラー干渉なし）
+	# focus_mode=NONE でクリック後もホバーが正常に反応する
+	var tbtn := TextureButton.new()
+	tbtn.texture_normal = load("res://assets/images/buttons/btn_primary_normal.png") as Texture2D
+	tbtn.texture_hover = load("res://assets/images/buttons/btn_primary_hover.png") as Texture2D
+	tbtn.texture_pressed = load("res://assets/images/buttons/btn_primary_pressed.png") as Texture2D
+	tbtn.ignore_texture_size = true
+	tbtn.stretch_mode = TextureButton.STRETCH_SCALE
+	tbtn.size = sz
+	tbtn.focus_mode = Control.FOCUS_NONE
+	tbtn.material = black_mat
+	container.add_child(tbtn)
 
-	return btn
+	# Label: シェーダーなし・クリック透過・フォントカラーを正しく描画
+	var lbl := Label.new()
+	lbl.text = label_text
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.size = sz
+	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	lbl.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
+	lbl.add_theme_font_override("font", load("res://assets/fonts/ShipporiMincho-ExtraBold.ttf") as Font)
+	lbl.add_theme_font_size_override("font_size", 18)
+	container.add_child(lbl)
+
+	return tbtn
 
 
 # ×ボタン: パネルを閉じる

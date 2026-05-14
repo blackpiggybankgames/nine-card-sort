@@ -235,3 +235,51 @@
 - **変更**: `_on_ability_ready` 冒頭で `set_all_selectable(false)` と `clear_highlights()` を呼ぶよう修正
 - **変更ファイル**: `scripts/Main.gd`
 - **理由**: カード選択完了 → 能力発動前のタイミングで選択可能エフェクト（ホワイトゴールドグロー・スケール拡大）が残り続けていた
+
+## 2026-05-14: シェアパネルボタンを TextureButton + Label 方式に変更
+
+**対象**: シェアパネル内の金色ボタン3つ（テキストをコピー・画像を保存・アンケートに答える）
+
+**問題**:
+1. ボタンが全体的に黒く見える（金色が出ない）
+2. マウスホバー時に視覚的な反応がない
+3. ボタン押下後にテキストが白くなる
+
+**原因**:
+- 旧方式（`TextureRect`+シェーダー + `Button`/StyleBoxEmpty 重ね）では:
+  - `Button` のホバー/プレス状態が `TextureRect` に伝わらない
+  - `Button` にシェーダーを当てると頂点カラー（フォント色）と干渉してテキストが白くなる
+
+**修正内容** (`scripts/Main.gd`):
+- `_make_gold_button` を `TextureButton`（テクスチャ切り替え）+ `Label`（シェーダーなし）方式に変更
+- texture_normal / focused: `gold_button_blank.png`
+- texture_hover: `btn_primary_hover.png`（明るいゴールド）
+- texture_pressed: `btn_primary_pressed.png`（暗めゴールド）
+- `Label` を別ノードとして配置し `mouse_filter = IGNORE`、ShipporiMincho-ExtraBold / ダークブラウンで描画
+
+## 2026-05-14: シェアパネルボタン画像をタイトル画面と統一・クリック後ホバー修正
+
+**対象**: シェアパネル内の金色ボタン3つ
+
+**問題**:
+1. クリック後にマウスを重ねても反応しない
+2. `gold_button_blank.png`（normal）と `btn_primary_hover.png`（hover）の見た目のギャップが大きい
+
+**原因**:
+- `TextureButton` はクリック後にフォーカスを取得し、`texture_focused` が表示されてホバー状態が上書きされていた
+
+**修正内容** (`scripts/Main.gd`):
+- `texture_normal` を `gold_button_blank.png` → `btn_primary_normal.png` に変更（タイトル画面と統一）
+- `texture_focused` を削除
+- `focus_mode = Control.FOCUS_NONE` を追加（クリック後もホバーが正常動作）
+
+## 2026-05-14: シェアパネルToastメッセージの位置を修正
+
+**対象**: シェアパネルの操作完了メッセージ（Toast）
+
+**問題**: Toastの位置がパネル下部（y=454）にあり見えなかった
+
+**修正**: `_panel_toast.position.y` を `board_h - 46.0`（454）→ `130.0` に変更
+（SHAREタイトル下・最初のボタン上のエリアに移動）
+
+**変更ファイル**: `scripts/Main.gd`
