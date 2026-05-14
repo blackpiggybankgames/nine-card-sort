@@ -22,6 +22,7 @@ extends Node2D
 @onready var use_ability_btn: Button = $UILayer/GameUI/UseAbilityButton
 @onready var skip_btn: Button = $UILayer/GameUI/SkipButton
 @onready var cancel_btn: Button = $UILayer/GameUI/CancelButton
+@onready var undo_btn: Button = $UILayer/GameUI/UndoButton
 @onready var instruction_label: Label = $UILayer/GameUI/InstructionLabel
 
 # デバッグUI要素
@@ -50,6 +51,9 @@ extends Node2D
 # 能力発動アニメーション後にデッキ更新アニメーションをスキップするフラグ
 var _skip_next_deck_update: bool = false
 
+# undoボタン押下後の手番開始をアニメーションなしで処理するフラグ
+var _is_undoing: bool = false
+
 # クリア演出: 能力発動中にズームを先行実施済みかどうかのフラグ
 var _clear_zoom_done: bool = false
 
@@ -59,28 +63,12 @@ var _panel_toast: Label = null
 
 
 func _ready() -> void:
-	# 日本語フォントのテーマを適用
-	# UILayer 配下と SubViewport 内の ResultCardScene の両方に適用する
+	# SubViewport 内の ResultCardScene はシーン外のため個別にテーマを適用
 	var theme: Theme = load("res://assets/default_theme.tres")
 	if theme:
-		for child in ui_layer.get_children():
-			if child is Control:
-				child.theme = theme
-		# ResultCardViewport は UILayer の外にあるためループに入らない
 		var result_scene := rc_viewport.get_child(0)
 		if result_scene is Control:
 			result_scene.theme = theme
-
-	# disabled 状態でもボタン画像が表示されるよう StyleBox をコード適用
-	var disabled_style := StyleBoxTexture.new()
-	disabled_style.texture = load("res://assets/images/buttons/btn_primary_normal.png")
-	disabled_style.texture_margin_left = 24.0
-	disabled_style.texture_margin_right = 24.0
-	disabled_style.texture_margin_top = 18.0
-	disabled_style.texture_margin_bottom = 18.0
-	disabled_style.modulate_color = Color(0.55, 0.55, 0.55, 0.65)
-	use_ability_btn.add_theme_stylebox_override("disabled", disabled_style)
-	skip_btn.add_theme_stylebox_override("disabled", disabled_style)
 
 	# 画面サイズ変更時に背景を更新
 	get_viewport().size_changed.connect(_update_background_size)
@@ -209,6 +197,7 @@ func _make_stat_row(name_text: String, count_text: String, color: Color) -> HBox
 func _on_start_button_pressed() -> void:
 	_show_game_screen()
 	deck_display.reset()
+	undo_btn.disabled = true
 	game_manager.start_game(false)
 
 
@@ -216,12 +205,25 @@ func _on_start_button_pressed() -> void:
 func _on_daily_challenge_button_pressed() -> void:
 	_show_game_screen()
 	deck_display.reset()
+	undo_btn.disabled = true
 	game_manager.start_game(true)
 
 
 # 手番開始時
 func _on_turn_started(top_card: int) -> void:
-	if _skip_next_deck_update:
+	# await前にいったん無効化（非同期処理中の誤操作を防ぐ）
+	undo_btn.disabled = true
+	if _is_undoing:
+		# undoフロー: アニメーションなしで即座にデッキを更新
+		_is_undoing = false
+		deck_display.update_display_instant(game_manager.get_deck())
+		deck_display.highlight_top_card()
+		deck_display.set_all_selectable(false)
+		deck_display.hide_insertion_arrows()
+		deck_display.reset_separation()
+		await get_tree().create_timer(0.1).timeout
+		deck_display.separate_active_card()
+	elif _skip_next_deck_update:
 		# 能力発動アニメーション済みのためデッキ更新アニメーションをスキップ
 		_skip_next_deck_update = false
 		deck_display.highlight_top_card()
@@ -246,6 +248,7 @@ func _on_turn_started(top_card: int) -> void:
 	skip_btn.disabled = false
 	cancel_btn.visible = false
 	instruction_label.visible = false
+	undo_btn.disabled = not game_manager.can_undo()
 
 
 # UIを更新
@@ -266,6 +269,7 @@ func _on_target_selection_step_updated(card: int, step: int, selected: Array[int
 	use_ability_btn.disabled = true
 	skip_btn.disabled = true
 	cancel_btn.visible = true
+	undo_btn.disabled = true  # 対象選択中はundo不可
 
 	deck_display.set_all_selectable(false)
 	for cn in selected:
@@ -391,6 +395,15 @@ func _on_skip_button_pressed() -> void:
 # キャンセルボタン
 func _on_cancel_button_pressed() -> void:
 	game_manager.cancel_target_selection()
+
+
+# 1手戻るボタン
+func _on_undo_button_pressed() -> void:
+	if deck_display.is_animating:
+		return
+	undo_btn.disabled = true
+	_is_undoing = true
+	game_manager.undo_last_turn()
 
 
 # ゲームクリア時
@@ -811,6 +824,7 @@ func _build_download_js(base64_data: String) -> String:
 func _on_retry_button_pressed() -> void:
 	_show_game_screen()
 	deck_display.reset()
+	undo_btn.disabled = true
 	game_manager.start_game(game_manager.is_daily_mode)
 
 
@@ -829,6 +843,7 @@ func _on_ability_ready(card: int, target1: int, target2: int, ability_card: int)
 	skip_btn.disabled = true
 	cancel_btn.visible = false
 	instruction_label.visible = false
+	undo_btn.disabled = true  # アニメーション中はundo不可
 
 	# カード選択エフェクトをクリア（能力発動前に選択可能表示を消す）
 	deck_display.set_all_selectable(false)

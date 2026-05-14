@@ -253,6 +253,12 @@ func _animate_u_shape(deck: Array[int], main_mover: int) -> void:
 	tween3.chain().tween_callback(_on_animation_finished)
 
 
+# アニメーションなしで即座に山札を更新（undo用）
+func update_display_instant(deck: Array[int]) -> void:
+	deck_data = deck
+	_update_card_positions_immediately(deck)
+
+
 # 山札を更新して表示（コの字なし・一直線アニメーション固定）
 # 発動カードを一番下へ移動する最終ステップ用
 func update_display_simple(deck: Array[int]) -> void:

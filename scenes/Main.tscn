@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://b8iurcg2xupqi"]
+[gd_scene load_steps=29 format=3 uid="uid://b8iurcg2xupqi"]
 
 [ext_resource type="Script" path="res://scripts/Main.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/GameManager.gd" id="2_gm"]
@@ -12,6 +12,10 @@
 [ext_resource type="FontFile" uid="uid://bxisgs8c0xkiv" path="res://assets/fonts/NotoSerifJP-VariableFont_wght.ttf" id="17_font_serif"]
 [ext_resource type="Shader" path="res://assets/shaders/black_transparent.gdshader" id="18_shader_btn"]
 [ext_resource type="FontFile" uid="uid://c6elwt7m4mwxo" path="res://assets/fonts/ShipporiMincho-ExtraBold.ttf" id="19_shippori"]
+[ext_resource type="Theme" uid="uid://dx7t2besn4etn" path="res://assets/default_theme.tres" id="20_theme"]
+[ext_resource type="Texture2D" uid="uid://bs63gyu8uhirm" path="res://assets/images/buttons/btn_primary_normal.png" id="21_btn_pn"]
+[ext_resource type="Texture2D" uid="uid://bv8yjocwd7l0w" path="res://assets/images/buttons/btn_primary_hover.png" id="22_btn_ph"]
+[ext_resource type="Texture2D" uid="uid://bdgdiwextvogc" path="res://assets/images/buttons/btn_primary_pressed.png" id="23_btn_pp"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
 blend_mode = 1
@@ -26,6 +30,35 @@ border_width_bottom = 2
 border_color = Color(0.72, 0.55, 0.22, 1)
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_primary_hover"]
+texture = ExtResource("22_btn_ph")
+texture_margin_left = 24.0
+texture_margin_top = 18.0
+texture_margin_right = 24.0
+texture_margin_bottom = 18.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_secondary_disabled"]
+texture = ExtResource("7_btn_sn")
+texture_margin_left = 20.0
+texture_margin_top = 16.0
+texture_margin_right = 20.0
+texture_margin_bottom = 16.0
+modulate_color = Color(0.55, 0.55, 0.55, 0.65)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_primary_pressed"]
+texture = ExtResource("23_btn_pp")
+texture_margin_left = 24.0
+texture_margin_top = 18.0
+texture_margin_right = 24.0
+texture_margin_bottom = 18.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_primary_normal"]
+texture = ExtResource("21_btn_pn")
+texture_margin_left = 24.0
+texture_margin_top = 18.0
+texture_margin_right = 24.0
+texture_margin_bottom = 18.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_secondary_hover"]
 texture = ExtResource("8_btn_sh")
@@ -88,6 +121,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("20_theme")
 
 [node name="LogoFrame" type="TextureRect" parent="UILayer/TitleScreen"]
 material = SubResource("CanvasItemMaterial_add")
@@ -141,6 +175,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("20_theme")
 
 [node name="TopPanel" type="Panel" parent="UILayer/GameUI"]
 layout_mode = 1
@@ -214,14 +249,19 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -122.0
+offset_left = -182.0
 offset_top = -97.0
-offset_right = -5.0
+offset_right = -35.0
 offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_fonts/font = ExtResource("19_shippori")
 theme_override_font_sizes/font_size = 16
+theme_override_styles/focus = SubResource("StyleBoxTexture_primary_hover")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_secondary_disabled")
+theme_override_styles/hover = SubResource("StyleBoxTexture_primary_hover")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_primary_pressed")
+theme_override_styles/normal = SubResource("StyleBoxTexture_primary_normal")
 text = "能力を使う"
 
 [node name="SkipButton" type="Button" parent="UILayer/GameUI"]
@@ -232,14 +272,16 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = 5.0
+offset_left = -25.0
 offset_top = -97.0
-offset_right = 122.0
+offset_right = 92.0
 offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_fonts/font = ExtResource("19_shippori")
 theme_override_font_sizes/font_size = 16
+theme_override_styles/focus = SubResource("StyleBoxTexture_secondary_hover")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_secondary_disabled")
 theme_override_styles/hover = SubResource("StyleBoxTexture_secondary_hover")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_secondary_pressed")
 theme_override_styles/normal = SubResource("StyleBoxTexture_secondary_normal")
@@ -266,6 +308,30 @@ theme_override_styles/hover = SubResource("StyleBoxTexture_secondary_hover")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_secondary_pressed")
 theme_override_styles/normal = SubResource("StyleBoxTexture_secondary_normal")
 text = "キャンセル"
+
+[node name="UndoButton" type="Button" parent="UILayer/GameUI"]
+material = SubResource("ShaderMaterial_btn")
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -83.0
+offset_top = -60.0
+offset_right = -5.0
+offset_bottom = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_fonts/font = ExtResource("19_shippori")
+theme_override_font_sizes/font_size = 14
+theme_override_styles/focus = SubResource("StyleBoxTexture_secondary_hover")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_secondary_disabled")
+theme_override_styles/hover = SubResource("StyleBoxTexture_secondary_hover")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_secondary_pressed")
+theme_override_styles/normal = SubResource("StyleBoxTexture_secondary_normal")
+disabled = true
+text = "1手戻す"
 
 [node name="InstructionLabel" type="Label" parent="UILayer/GameUI"]
 layout_mode = 1
@@ -347,6 +413,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+theme = ExtResource("20_theme")
 
 [node name="ClearBG" type="ColorRect" parent="UILayer/ClearScreen"]
 layout_mode = 1
@@ -546,6 +613,7 @@ grow_horizontal = 2
 [connection signal="pressed" from="UILayer/GameUI/UseAbilityButton" to="." method="_on_use_ability_button_pressed"]
 [connection signal="pressed" from="UILayer/GameUI/SkipButton" to="." method="_on_skip_button_pressed"]
 [connection signal="pressed" from="UILayer/GameUI/CancelButton" to="." method="_on_cancel_button_pressed"]
+[connection signal="pressed" from="UILayer/GameUI/UndoButton" to="." method="_on_undo_button_pressed"]
 [connection signal="pressed" from="UILayer/GameUI/DebugContainer/DebugClearButton" to="." method="_on_debug_clear_button_pressed"]
 [connection signal="pressed" from="UILayer/ClearScreen/ShareButton" to="." method="_on_share_button_pressed"]
 [connection signal="pressed" from="UILayer/ClearScreen/RetryButton" to="." method="_on_retry_button_pressed"]

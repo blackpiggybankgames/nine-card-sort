@@ -50,3 +50,19 @@
 - `scripts/autoload/Config.gd` — `get_share_url()` / `get_share_hashtag()` 追加
 - `scenes/Main.tscn` — ShareButton / CopyToastLabel 追加、RetryButton位置調整
 - `scripts/Main.gd` — シェア機能3メソッド追加
+
+## 2026-05-14: ゲーム中「1手戻る」ボタン追加
+
+### 変更内容
+- ゲーム画面の左下に「↩ 戻る」ボタン（セカンダリスタイル・小サイズ）を追加
+- スキップまたは能力発動が完了した後に活性化、undo後は非活性（1手のみ）
+- 対象選択中・アニメーション中は非活性
+- undo実行時はアニメーションなしでデッキを即座に復元
+- 復元対象: デッキ配列・手数・スキップ回数・能力発動回数・カード8フリップ状態
+
+### 変更ファイル
+- `scripts/GameManager.gd`: `can_undo()` / `_save_undo_state()` / `undo_last_turn()` 追加
+- `scripts/DeckDisplay.gd`: `update_display_instant()` 追加
+- `scripts/Main.gd`: undoボタン制御・ハンドラ追加
+- `scenes/Main.tscn`: UndoButton ノード追加
+- `tests/test_game_manager.gd`: undoテスト10件追加（69件全件通過）

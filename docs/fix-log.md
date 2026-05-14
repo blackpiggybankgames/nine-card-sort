@@ -86,3 +86,30 @@
 **修正**: `_create_share_panel()` で ShaderMaterial を1つ生成しすべてのノードで共有。`_make_gold_button` シグネチャに `black_mat: ShaderMaterial` を追加して外部から受け取る形に変更
 
 **変更ファイル**: `scripts/Main.gd`
+
+## 2026-05-14: 1手戻すボタンが手番0で活性化するバグを修正
+
+### 症状
+ゲーム開始直後（0手番）で「1手戻す」ボタンが押せる状態になっていた。押してもundo状態がないため何も起こらない。
+
+### 原因
+`_on_turn_started()` は非同期関数（`await` 含む）のため、ボタン状態の確定（`undo_btn.disabled = not can_undo()`）が await 完了後（約0.35秒後）まで遅延する。その間、ボタンが有効状態のまま表示されることがあった。
+
+### 修正
+`_on_turn_started()` の冒頭（await前）で `undo_btn.disabled = true` を明示的にセット。await後に改めて `can_undo()` で状態を確定させる。
+
+### 変更ファイル
+- `scripts/Main.gd`: `_on_turn_started()` 冒頭に `undo_btn.disabled = true` を追加
+
+## 2026-05-14 非活性ボタンのスタイル統一
+
+**症状**:
+- スキップボタン・能力を使うボタンが非活性時に primary スタイル（黄金色）で表示されていた
+- 1手戻るボタンの非活性スタイルが他ボタンと異なっていた
+
+**原因**: `Main.gd` の `_ready()` で、`skip_btn` と `use_ability_btn` の disabled StyleBox に `btn_primary_normal.png`（margins 24px）を使用していた。`undo_btn` は別途 `btn_secondary_normal.png` を使用。
+
+**修正**: 3ボタン全ての disabled StyleBox を `btn_secondary_normal.png`（margins 20/16px）に統一。`disabled_style_undo` の別ブロックを削除し1つの `disabled_style` にまとめた。
+
+**ファイル**: `scripts/Main.gd`
+

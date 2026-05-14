@@ -283,3 +283,29 @@
 （SHAREタイトル下・最初のボタン上のエリアに移動）
 
 **変更ファイル**: `scripts/Main.gd`
+
+## 2026-05-14: ゲーム画面ボタンレイアウト調整
+
+### 症状
+「スキップ」ボタンと「1手戻す」ボタンが狭い画面幅（約390px）で重なっていた。「能力を使う」ボタンのテキストが若干はみ出していた。
+
+### 変更内容
+- **能力を使うボタン**: 幅117px → 147px（+30px拡張）、左右を左に30pxシフト
+  - offset_left: -122 → -182、offset_right: -5 → -35
+- **スキップボタン**: 幅117px維持、左右を左に30pxシフト
+  - offset_left: +5 → -25、offset_right: +122 → +92
+- 2ボタン間の隙間10pxは維持
+- 390px幅でのスキップ〜1手戻すの余裕: 約20px確保
+
+### 変更ファイル
+- `scenes/Main.tscn`: UseAbilityButton・SkipButton のオフセット値を調整
+
+## 2026-05-14: 非活性ボタンの視覚的表示修正
+
+**対象**: 全画面のボタン（能力を使う、スキップ、1手戻す）
+
+**変更内容**: シェーダー `assets/shaders/black_transparent.gdshader` の最終行を `COLOR = col;` から `COLOR = col * COLOR;` に変更。
+
+**理由**: Godotはdisabled状態のボタンに頂点カラー（vertex COLOR）を乗算して暗転を表現するが、シェーダーが `COLOR = col` で頂点カラーを無視していたため、disabled状態でも見た目が変わらなかった。`* COLOR` を復元することでGodotの標準的なdisabled暗転が機能するようになった。
+
+**影響範囲**: ShaderMaterial `ShaderMaterial_btn` を使用するすべてのボタン

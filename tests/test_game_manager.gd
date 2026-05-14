@@ -164,3 +164,60 @@ func test_free_play_deck_can_differ_from_daily() -> void:
 			found_difference = true
 			break
 	assert_true(found_difference, "フリープレイはデイリーと異なる配列になりうる")
+
+# === undo機能 ===
+
+func test_can_undo_false_at_start() -> void:
+	assert_false(gm.can_undo(), "ゲーム開始直後はundoできない")
+
+func test_can_undo_true_after_skip() -> void:
+	gm.skip_ability()
+	assert_true(gm.can_undo(), "スキップ後はundoできる")
+
+func test_can_undo_true_after_commit() -> void:
+	gm.deck.cards.assign([3, 1, 2, 4, 5, 6, 7, 8, 9])
+	gm.commit_ability_execution(3, -1, -1, 3)
+	assert_true(gm.can_undo(), "能力発動後はundoできる")
+
+func test_can_undo_false_after_undo() -> void:
+	gm.skip_ability()
+	gm.undo_last_turn()
+	assert_false(gm.can_undo(), "undo後は再度undoできない（1手のみ）")
+
+func test_undo_restores_deck() -> void:
+	var original_deck = gm.get_deck().duplicate()
+	gm.skip_ability()
+	gm.undo_last_turn()
+	assert_eq(gm.get_deck(), original_deck, "undoでデッキが元の状態に戻る")
+
+func test_undo_restores_turn_count() -> void:
+	var before = gm.get_turn_count()
+	gm.skip_ability()
+	gm.undo_last_turn()
+	assert_eq(gm.get_turn_count(), before, "undoで手数カウンターが元に戻る")
+
+func test_undo_restores_skip_count() -> void:
+	gm.skip_ability()
+	gm.undo_last_turn()
+	assert_eq(gm.skip_count, 0, "undoでスキップ回数が元に戻る")
+
+func test_undo_restores_ability_use_count() -> void:
+	gm.deck.cards.assign([3, 1, 2, 4, 5, 6, 7, 8, 9])
+	gm.commit_ability_execution(3, -1, -1, 3)
+	gm.undo_last_turn()
+	assert_eq(gm.ability_use_counts[3], 0, "undoで能力発動回数が元に戻る")
+
+func test_undo_restores_card8_flipped() -> void:
+	gm.card8_flipped = false
+	gm.deck.cards.assign([8, 1, 2, 3, 4, 5, 6, 7, 9])
+	gm.commit_ability_execution(8, -1, -1, 8)
+	assert_true(gm.card8_flipped, "前提: カード8が裏面になっている")
+	gm.undo_last_turn()
+	assert_false(gm.card8_flipped, "undoでカード8のフリップ状態が元に戻る")
+
+func test_undo_does_nothing_without_state() -> void:
+	var original_deck = gm.get_deck().duplicate()
+	var original_turns = gm.get_turn_count()
+	gm.undo_last_turn()  # 保存なしでundo → 何も変わらない
+	assert_eq(gm.get_deck(), original_deck, "状態未保存のundo後もデッキは変わらない")
+	assert_eq(gm.get_turn_count(), original_turns, "状態未保存のundo後も手数は変わらない")

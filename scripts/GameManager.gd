@@ -33,6 +33,14 @@ var card8_flipped: bool = false
 var selecting_ability: int = -1  # 現在選択中の能力
 var selected_targets: Array[int] = []  # 選択済みの対象
 
+# undoバッファ（1手前の状態を保持）
+var _undo_deck: Array[int] = []
+var _undo_turn_count: int = 0
+var _undo_skip_count: int = 0
+var _undo_ability_use_counts: Dictionary = {}
+var _undo_card8_flipped: bool = false
+var _has_undo_state: bool = false
+
 
 func _ready() -> void:
 	# Deckノードを取得（子ノードとして追加されている前提）
@@ -53,6 +61,7 @@ func start_game(daily_mode: bool = false) -> void:
 	for i in range(1, 10):
 		ability_use_counts[i] = 0
 	card8_flipped = false
+	_has_undo_state = false
 	if daily_mode:
 		deck.shuffle_deck(get_daily_seed())
 	else:
@@ -81,6 +90,7 @@ func skip_ability() -> void:
 	if current_state != GameState.PLAYING:
 		return
 
+	_save_undo_state()
 	turn_count += 1
 	skip_count += 1
 	deck.move_top_to_bottom()
@@ -208,6 +218,9 @@ func cancel_target_selection() -> void:
 # 能力を実際に実行する（Main.gdのアニメーション完了後に呼ばれる）
 # original_top_card: 手番開始時に一番上だったカード（能力発動カード）
 func commit_ability_execution(card: int, target1: int = -1, target2: int = -1, original_top_card: int = -1) -> void:
+	# undoのために実行前の状態を保存（deck変更より前）
+	_save_undo_state()
+
 	# 能力発動カードを山札から取り除く（能力の効果対象にならないようにする）
 	var ability_card = original_top_card if original_top_card != -1 else card
 	deck.remove_card(ability_card)
@@ -286,3 +299,32 @@ func get_skip_count() -> int:
 # 各カードの能力発動回数を取得
 func get_ability_use_counts() -> Dictionary:
 	return ability_use_counts
+
+
+# undoできるかどうか
+func can_undo() -> bool:
+	return _has_undo_state
+
+
+# 現在の状態をundoバッファに保存
+func _save_undo_state() -> void:
+	_undo_deck = deck.cards.duplicate()
+	_undo_turn_count = turn_count
+	_undo_skip_count = skip_count
+	_undo_ability_use_counts = ability_use_counts.duplicate()
+	_undo_card8_flipped = card8_flipped
+	_has_undo_state = true
+
+
+# 1手前の状態に戻す
+func undo_last_turn() -> void:
+	if not _has_undo_state:
+		return
+	deck.cards = _undo_deck.duplicate()
+	turn_count = _undo_turn_count
+	skip_count = _undo_skip_count
+	ability_use_counts = _undo_ability_use_counts.duplicate()
+	card8_flipped = _undo_card8_flipped
+	_has_undo_state = false
+	current_state = GameState.PLAYING
+	_start_turn()
