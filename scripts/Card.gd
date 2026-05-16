@@ -56,31 +56,36 @@ func _draw() -> void:
 		draw_rect(card_rect, Color(0.29, 0.24, 0.16), false, 2.0)
 
 
-# グローバル入力イベントでクリック検出
+# _input() は GameUI Control の mouse_filter に関係なく全ノードへ配信されるため使用
+# （_input_event() は GameUI の mouse_filter=STOP に遮断される）
 func _input(event: InputEvent) -> void:
-	# 非表示または選択不可の場合はイベントを無視
-	if not is_visible_in_tree():
+	if not is_visible_in_tree() or not is_selectable:
 		return
 
-	# 選択不可の場合はイベントを処理しない（他のUI要素へ伝播させる）
-	if not is_selectable:
-		return
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		var mouse_pos = get_global_mouse_position()
+		if _is_point_inside(mouse_pos) and not _is_occluded_by_front_card(mouse_pos):
+			card_clicked.emit(card_number)
+			get_viewport().set_input_as_handled()
 
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			# マウス位置がこのカードの範囲内かチェック
-			var mouse_pos = get_global_mouse_position()
-			if _is_point_inside(mouse_pos):
-				card_clicked.emit(card_number)
-				# このイベントを処理済みにする
-				get_viewport().set_input_as_handled()
+
+# 自分より z_index が高い（手前の）選択可能カードが同じ座標を覆っていれば true
+func _is_occluded_by_front_card(point: Vector2) -> bool:
+	var parent = get_parent()
+	if not parent:
+		return false
+	for sibling in parent.get_children():
+		if sibling == self or not sibling is Card:
+			continue
+		var sibling_card := sibling as Card
+		if sibling_card.z_index > z_index and sibling_card.is_selectable and sibling_card._is_point_inside(point):
+			return true
+	return false
 
 
 # 指定した点がカードの範囲内かチェック
 func _is_point_inside(point: Vector2) -> bool:
-	# グローバル座標をローカル座標に変換
 	var local_point = to_local(point)
-	# カードの矩形範囲内かチェック
 	var rect = Rect2(-CARD_WIDTH/2, -CARD_HEIGHT/2, CARD_WIDTH, CARD_HEIGHT)
 	return rect.has_point(local_point)
 
