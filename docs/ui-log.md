@@ -309,3 +309,33 @@
 **理由**: Godotはdisabled状態のボタンに頂点カラー（vertex COLOR）を乗算して暗転を表現するが、シェーダーが `COLOR = col` で頂点カラーを無視していたため、disabled状態でも見た目が変わらなかった。`* COLOR` を復元することでGodotの標準的なdisabled暗転が機能するようになった。
 
 **影響範囲**: ShaderMaterial `ShaderMaterial_btn` を使用するすべてのボタン
+
+## 2026-05-16 | 試行 #1 | 能力を使うボタンの非活性時半透明化
+
+変更内容: UseAbilityButton の disabled スタイルを StyleBoxTexture_secondary_disabled（グレーテクスチャ）から新規作成した StyleBoxTexture_primary_disabled（プライマリテクスチャ＋半透明グレーmodulate）に変更。scenes/Main.tscn のみ変更。
+
+理由: 対象選択中に能力を使うボタンが非活性になっても視覚的に変化がなく、ユーザーが状態を把握しにくかった。
+
+結果: 未評価
+
+---
+
+## 2026-05-16 | 試行 #2 | ボタンfocus_mode=NONE設定（フォーカス残留バグ修正）
+
+変更内容: UseAbilityButton / SkipButton / UndoButton に `focus_mode = 0` を追加。scenes/Main.tscn のみ変更。
+
+理由: 能力を使うボタンをクリック後、disabled = true になっても Godot のフォーカスが残留し、focus スタイル（明るいホバー画像）が disabled スタイルの上に重ね描きされていた。タイトル画面の TextureButton には同様の対策が既に入っていたが、GameUI ボタンには未適用だった。
+
+結果: 未評価
+
+---
+
+## 2026-05-16 | 試行 #3 | CancelButtonにfocus_mode=0設定
+
+変更内容: CancelButton に `focus_mode = 0` を追加。scenes/Main.tscn のみ変更。
+
+理由: CancelButton はfocusオーバーライドなし・focus_mode未設定のため、クリック時にデフォルトテーマのfocusスタイル（primary_hover）が pressed（secondary_pressed）の上に重ね描きされ、プライマリ系の画像が見えていた。前回修正した3ボタンと同根本原因。
+
+結果: 未評価
+
+---
