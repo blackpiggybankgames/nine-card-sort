@@ -11,6 +11,7 @@ Godot 4.3 / GDScript / Web Export / GitHub Pages配信。
 | docs/GAME_FLOW.md | ゲーム進行順序 |
 | docs/GLOSSARY.md | ゲーム用語集 |
 | docs/SYSTEM_SPEC.md | UI要素・物理パラメータ |
+| docs/UI_BUTTON_GUIDE.md | ボタン関連の暗黙知（focus/テーマ継承/シェーダー干渉）。ボタン作業前に必読 |
 | docs/content/abilities.md | 能力定義（詳細） |
 | docs/content/card_assignments.md | カード番号と能力の対応表 |
 | docs/adr/ | 設計判断の記録（なぜこうしたか） |

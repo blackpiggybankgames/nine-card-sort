@@ -10,6 +10,7 @@ description: >
 - `docs/temp/change-ui.md`（なければ `docs/temp/*.md` を確認）
 - `docs/SYSTEM_SPEC.md`（UI要素・物理パラメータ）
 - `config/game_balance.json`（パラメータ管理）
+- **ボタン関連の変更時は `references/button_debug.md` を必ず先に読む**（focus残留・テーマ継承・シェーダー干渉の罠を踏まないため）
 
 ## 手順
 1. `docs/temp/change-ui.md` と `docs/SYSTEM_SPEC.md` を読む
