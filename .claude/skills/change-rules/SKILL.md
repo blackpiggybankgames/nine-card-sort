@@ -2,6 +2,10 @@
 name: change-rules
 description: ゲームルールの変更
 ---
+## モデル分担
+- **調査フェーズ**（手順 1〜3）: `Agent` ツール（`model=opus`）に委譲してルール変更の影響範囲を分析する
+- **実装フェーズ**（手順 4〜）: デフォルトモデルで計画提示・実装を行う
+
 ## 読むファイル
 - docs/temp/$ARGUMENTS があれば読む（なければ docs/temp/*.md を確認）
 - docs/GAME_DESIGN.md（影響範囲把握）

@@ -7,6 +7,10 @@ description: >
   前提: GUT（Godot Unit Test）が addons/gut/ に導入済みであること。
 ---
 
+## モデル分担
+- **調査フェーズ**（手順 1〜2）: `Agent` ツール（`model=opus`）に委譲してテスト対象の分析・計画立案を行う
+- **実装フェーズ**（手順 3〜）: デフォルトモデルでテストコードを実装する
+
 ## 読むファイル
 - `docs/temp/add-tests.md`（なければ `docs/temp/*.md` を確認）
 - テスト対象のソースコード（`scripts/` 以下）

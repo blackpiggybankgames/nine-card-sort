@@ -6,6 +6,10 @@ description: >
   「change-card.mdを実装」と言われたときに使用。
 ---
 
+## モデル分担
+- **調査フェーズ**（手順 1）: `Agent` ツール（`model=opus`）に委譲してドキュメント・能力定義を読む
+- **実装フェーズ**（手順 2〜）: デフォルトモデルで計画提示・実装を行う
+
 ## 読むファイル
 - `docs/temp/change-card.md`（なければ `docs/temp/*.md` を確認）
 - `docs/ABILITIES.md`（現在の確定能力一覧）
